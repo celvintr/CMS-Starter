@@ -37,6 +37,11 @@ instalación independiente que se genera en segundos.
 - Diseño propio con tipografía **Bricolage Grotesque + Inter**, íconos SVG, totalmente
   **responsive** y **theme-aware** al color de marca.
 
+### Packs (ecosistema)
+- **Exporta e importa módulos y plantillas** como archivos `.json` portables. Armas un
+  módulo o una plantilla una vez y lo **reutilizas o compartes** entre sitios — la base de un
+  ecosistema de packs.
+
 ### Multi-cliente
 - Script `nuevo-cliente.ps1` que **clona y configura** un sitio nuevo (base de datos, admin,
   contenido base) en segundos.

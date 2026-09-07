@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PageResource\Pages;
 use App\Models\Module;
 use App\Models\Page;
+use App\Support\Pack;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -225,6 +226,19 @@ class PageResource extends Resource
             ])
             ->defaultSort('sort_order')
             ->actions([
+                Tables\Actions\Action::make('exportar')
+                    ->label('Exportar plantilla')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('gray')
+                    ->action(function (Page $record) {
+                        $json = Pack::toJson(Pack::exportPage($record));
+
+                        return response()->streamDownload(
+                            fn () => print($json),
+                            "plantilla-{$record->slug}.json",
+                            ['Content-Type' => 'application/json'],
+                        );
+                    }),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])

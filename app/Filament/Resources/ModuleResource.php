@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ModuleResource\Pages;
 use App\Models\Module;
+use App\Support\Pack;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -148,6 +149,26 @@ class ModuleResource extends Resource
             ])
             ->defaultSort('sort_order')
             ->actions([
+                Tables\Actions\Action::make('exportar')
+                    ->label('Exportar')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('gray')
+                    ->form([
+                        Forms\Components\Toggle::make('con_registros')
+                            ->label('Incluir registros')
+                            ->helperText('Incluye los registros cargados (útil para packs con contenido de ejemplo).')
+                            ->default(false),
+                    ])
+                    ->action(function (Module $record, array $data) {
+                        $pack = Pack::exportModule($record, (bool) ($data['con_registros'] ?? false));
+                        $json = Pack::toJson($pack);
+
+                        return response()->streamDownload(
+                            fn () => print($json),
+                            "modulo-{$record->slug}.json",
+                            ['Content-Type' => 'application/json'],
+                        );
+                    }),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ]);

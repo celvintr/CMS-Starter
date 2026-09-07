@@ -4,6 +4,7 @@ namespace App\Filament\Resources\PageResource\Pages;
 
 use App\Filament\Resources\PageResource;
 use App\Models\Page;
+use App\Support\Pack;
 use App\Support\PageTemplates;
 use Filament\Actions;
 use Filament\Forms;
@@ -58,6 +59,45 @@ class ListPages extends ListRecords
                     Notification::make()
                         ->title('Página creada desde la plantilla "' . $tpl['name'] . '"')
                         ->body('Ya puedes editar su contenido.')
+                        ->success()
+                        ->send();
+
+                    $livewire->redirect(PageResource::getUrl('edit', ['record' => $page->getKey()]));
+                }),
+            Actions\Action::make('importarPlantilla')
+                ->label('Importar plantilla')
+                ->icon('heroicon-o-arrow-up-tray')
+                ->color('gray')
+                ->modalHeading('Importar plantilla desde un pack (.json)')
+                ->modalSubmitActionLabel('Importar')
+                ->form([
+                    Forms\Components\FileUpload::make('archivo')
+                        ->label('Archivo de la plantilla (.json)')
+                        ->acceptedFileTypes(['application/json', 'text/plain'])
+                        ->storeFiles(false)
+                        ->required(),
+                    Forms\Components\TextInput::make('title')
+                        ->label('Título de la nueva página')
+                        ->helperText('Opcional. Si lo dejas vacío, se usa el del pack.'),
+                ])
+                ->action(function (array $data, \Livewire\Component $livewire) {
+                    $file = is_array($data['archivo']) ? reset($data['archivo']) : $data['archivo'];
+                    $pack = Pack::parse($file?->get(), 'page-template');
+
+                    if (! $pack) {
+                        Notification::make()
+                            ->title('Archivo no válido')
+                            ->body('El archivo no es un pack de plantilla válido.')
+                            ->danger()
+                            ->send();
+
+                        return;
+                    }
+
+                    $page = Pack::importPage($pack, $data['title'] ?: null);
+
+                    Notification::make()
+                        ->title('Plantilla importada como "' . $page->title . '"')
                         ->success()
                         ->send();
 

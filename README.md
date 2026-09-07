@@ -38,9 +38,12 @@ instalación independiente que se genera en segundos.
   **responsive** y **theme-aware** al color de marca.
 
 ### Packs (ecosistema)
-- **Exporta e importa módulos y plantillas** como archivos `.json` portables. Armas un
-  módulo o una plantilla una vez y lo **reutilizas o compartes** entre sitios — la base de un
-  ecosistema de packs.
+- **Biblioteca de packs**: módulos y plantillas curados (Tienda, Servicios, Equipo,
+  Testimonios, FAQ, Propiedades, Citas, Restaurante, Clínica, Inmobiliaria) que se **instalan
+  de un clic** desde el panel.
+- **Exporta e importa** cualquier módulo o plantilla como archivo `.json` portable. Deja packs
+  en `resources/packs/` y aparecen en la biblioteca — así cualquiera puede ampliarla y
+  compartir sin tocar código.
 
 ### Multi-cliente
 - Script `nuevo-cliente.ps1` que **clona y configura** un sitio nuevo (base de datos, admin,

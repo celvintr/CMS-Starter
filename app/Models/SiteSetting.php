@@ -16,6 +16,7 @@ class SiteSetting extends Model
         'paypal_secret' => 'encrypted',         // secreto de PayPal encriptado
         'paypal_enabled' => 'boolean',
         'menu' => 'array',
+        'features' => 'array',
     ];
 
     /**

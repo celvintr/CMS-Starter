@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrderResource\Pages;
 use App\Models\Order;
+use App\Support\Features;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
@@ -20,6 +21,11 @@ class OrderResource extends Resource
     protected static ?string $modelLabel = 'orden';
     protected static ?string $pluralModelLabel = 'órdenes';
     protected static ?int $navigationSort = 4;
+
+    public static function canAccess(): bool
+    {
+        return Features::enabled('tienda');
+    }
 
     public static function canCreate(): bool
     {

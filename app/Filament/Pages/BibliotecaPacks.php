@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Filament\Resources\ModuleResource;
 use App\Filament\Resources\PageResource;
 use App\Support\AiGenerator;
+use App\Support\Features;
 use App\Support\Pack;
 use App\Support\PackLibrary;
 use Filament\Actions;
@@ -36,6 +37,7 @@ class BibliotecaPacks extends Page
             Actions\Action::make('generarIA')
                 ->label('Generar con IA')
                 ->icon('heroicon-o-sparkles')
+                ->visible(fn () => Features::enabled('ia'))
                 ->modalHeading('Generar con inteligencia artificial')
                 ->modalDescription('Describe lo que necesitas y la IA lo crea, listo para editar.')
                 ->modalSubmitActionLabel('Generar')

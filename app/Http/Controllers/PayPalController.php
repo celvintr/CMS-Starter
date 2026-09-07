@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\SiteSetting;
+use App\Support\Notifier;
 use App\Support\PayPal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -93,6 +94,8 @@ class PayPalController extends Controller
                     'paid_at' => now(),
                     'paypal_capture_id' => data_get($result, 'purchase_units.0.payments.captures.0.id'),
                 ]);
+
+                Notifier::order($order);
             }
 
             session()->forget('cart');

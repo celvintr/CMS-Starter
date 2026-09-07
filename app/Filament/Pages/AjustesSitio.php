@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\MailAccount;
 use App\Models\SiteSetting;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -151,6 +152,28 @@ class AjustesSitio extends Page implements HasForms
                             ->password()->revealable()
                             ->placeholder('•••••••• (se guarda encriptada)')
                             ->helperText('Déjalo vacío para no cambiar el existente.'),
+                    ])->columns(2)->collapsed(),
+
+                Forms\Components\Section::make('Notificaciones por correo')
+                    ->description('Elige por cuál cuenta y a quién avisar cuando llega un mensaje o una orden.')
+                    ->icon('heroicon-o-bell-alert')
+                    ->schema([
+                        Forms\Components\Placeholder::make('nota_smtp')
+                            ->label('')
+                            ->content('Primero crea tus cuentas SMTP en Configuración → Cuentas de correo.')
+                            ->columnSpanFull(),
+                        Forms\Components\Select::make('notify_forms_account_id')
+                            ->label('Formularios y mensajes: cuenta')
+                            ->options(fn () => MailAccount::pluck('name', 'id')->all())
+                            ->native(false)->placeholder('Sin notificar'),
+                        Forms\Components\TextInput::make('notify_forms_email')
+                            ->label('Formularios y mensajes: enviar a')->email(),
+                        Forms\Components\Select::make('notify_orders_account_id')
+                            ->label('Órdenes (Stripe/PayPal): cuenta')
+                            ->options(fn () => MailAccount::pluck('name', 'id')->all())
+                            ->native(false)->placeholder('Sin notificar'),
+                        Forms\Components\TextInput::make('notify_orders_email')
+                            ->label('Órdenes: enviar a')->email(),
                     ])->columns(2)->collapsed(),
             ])
             ->statePath('data');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ContactMessage;
+use App\Support\Notifier;
 use Illuminate\Http\Request;
 
 class ContactController extends Controller
@@ -24,6 +25,13 @@ class ContactController extends Controller
         $data['source_url'] = $request->input('source_url', url()->previous());
 
         ContactMessage::create($data);
+
+        Notifier::forms('Contacto — ' . $data['name'], [
+            ['Nombre', $data['name']],
+            ['Teléfono', $data['phone'] ?? null],
+            ['Correo', $data['email'] ?? null],
+            ['Mensaje', $data['message']],
+        ], $data['source_url']);
 
         return back()->with('sent', '¡Gracias! Tu mensaje fue enviado. Te contactaremos pronto.');
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\SiteSetting;
+use App\Support\Notifier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Stripe\StripeClient;
@@ -131,6 +132,8 @@ class PaymentController extends Controller
                     'paid_at' => now(),
                     'stripe_payment_intent' => $object->payment_intent ?? null,
                 ]);
+
+                Notifier::order($order);
             }
         }
 

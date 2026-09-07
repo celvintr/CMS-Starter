@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Entry;
 use App\Models\Module;
+use App\Support\Notifier;
 use Illuminate\Http\Request;
 
 class SubmissionController extends Controller
@@ -46,6 +47,12 @@ class SubmissionController extends Controller
             'data' => $data,
             'is_published' => true,
         ]);
+
+        $filas = [];
+        foreach ($module->fieldList() as $field) {
+            $filas[] = [$field['label'] ?? $field['key'], $data[$field['key']] ?? null];
+        }
+        Notifier::forms($module->name . ' — ' . (is_string($title) && $title !== '' ? $title : 'Envío'), $filas, url()->previous());
 
         return back()->with('sent', '¡Gracias! Tu información fue enviada correctamente.');
     }

@@ -4,11 +4,14 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PostResource\Pages;
 use App\Models\Post;
+use App\Models\SiteSetting;
+use App\Support\Features;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class PostResource extends Resource
@@ -65,7 +68,46 @@ class PostResource extends Resource
                     ])->collapsed(),
                 ])->columnSpan(1),
             ]),
+
+            // Traducciones (módulo Multilenguaje): título, resumen y contenido por idioma.
+            ...static::translationSections(),
         ]);
+    }
+
+    /**
+     * Secciones de traducción, una por idioma no predeterminado.
+     * Solo aparecen si el módulo Multilenguaje está activo.
+     *
+     * @return array<int, \Filament\Forms\Components\Component>
+     */
+    protected static function translationSections(): array
+    {
+        if (! Features::enabled('multilenguaje') || ! Schema::hasTable('site_settings')) {
+            return [];
+        }
+
+        $settings = SiteSetting::current();
+        $default = $settings->defaultLanguage();
+        $sections = [];
+
+        foreach ($settings->activeLanguages() as $lang) {
+            $code = $lang['code'] ?? null;
+            if (! $code || $code === $default) {
+                continue;
+            }
+
+            $sections[] = Forms\Components\Section::make('Traducción · ' . ($lang['name'] ?? strtoupper($code)))
+                ->description('Versión en ' . ($lang['name'] ?? $code) . '. Los campos vacíos usan el contenido principal.')
+                ->icon('heroicon-o-language')
+                ->collapsed()
+                ->schema([
+                    Forms\Components\TextInput::make("translations.{$code}.title")->label('Título'),
+                    Forms\Components\Textarea::make("translations.{$code}.excerpt")->label('Resumen / Extracto')->rows(2),
+                    Forms\Components\RichEditor::make("translations.{$code}.body")->label('Contenido'),
+                ]);
+        }
+
+        return $sections;
     }
 
     public static function table(Table $table): Table

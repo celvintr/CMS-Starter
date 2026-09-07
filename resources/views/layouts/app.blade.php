@@ -1,16 +1,45 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', $settings->meta_title ?: $settings->site_name)</title>
-    <meta name="description" content="@yield('meta_description', $settings->meta_description)">
+    <title>@yield('title', $settings->t('meta_title') ?: $settings->t('site_name'))</title>
+    <meta name="description" content="@yield('meta_description', $settings->t('meta_description'))">
     <link rel="canonical" href="{{ url()->current() }}">
 
+    {{-- Alternates de idioma (hreflang) para SEO multilenguaje --}}
+    @php
+        $mlEnabled = \App\Support\Features::enabled('multilenguaje');
+        $siteLangs = $settings->activeLanguages();
+
+        // El middleware SetLocale ya quitó el prefijo de idioma de la petición,
+        // así que la ruta actual viene limpia.
+        $basePath = request()->path();          // "blog", "nosotros" o "/" en el inicio
+        $basePath = $basePath === '/' ? '' : trim($basePath, '/');
+        $queryString = request()->getQueryString();
+        $origin = request()->getSchemeAndHttpHost();
+
+        // Construye la misma página en otro idioma. Se arma a mano (sin url()/route())
+        // para no heredar el prefijo del idioma activo.
+        $localeUrl = function (array $lang) use ($settings, $basePath, $queryString, $origin) {
+            $isDefault = $lang['code'] === $settings->defaultLanguage();
+            $path = $isDefault ? $basePath : trim($lang['code'] . '/' . $basePath, '/');
+            $url = $origin . '/' . $path;
+
+            return $queryString ? $url . '?' . $queryString : $url;
+        };
+    @endphp
+    @if ($mlEnabled && count($siteLangs) > 1)
+        @foreach ($siteLangs as $lang)
+            <link rel="alternate" hreflang="{{ $lang['code'] }}" href="{{ $localeUrl($lang) }}">
+        @endforeach
+        <link rel="alternate" hreflang="x-default" href="{{ $origin . '/' . $basePath }}">
+    @endif
+
     {{-- Open Graph / Twitter (para compartir en redes y WhatsApp) --}}
-    <meta property="og:site_name" content="{{ $settings->site_name }}">
-    <meta property="og:title" content="@yield('og_title', $settings->meta_title ?: $settings->site_name)">
-    <meta property="og:description" content="@yield('meta_description', $settings->meta_description)">
+    <meta property="og:site_name" content="{{ $settings->t('site_name') }}">
+    <meta property="og:title" content="@yield('og_title', $settings->t('meta_title') ?: $settings->t('site_name'))">
+    <meta property="og:description" content="@yield('meta_description', $settings->t('meta_description'))">
     <meta property="og:type" content="@yield('og_type', 'website')">
     <meta property="og:url" content="{{ url()->current() }}">
     @hasSection('og_image')
@@ -25,7 +54,7 @@
         $org = array_filter([
             '@context' => 'https://schema.org',
             '@type' => 'Organization',
-            'name' => $settings->site_name,
+            'name' => $settings->t('site_name'),
             'url' => url('/'),
             'logo' => $settings->logo_path ? asset('storage/' . $settings->logo_path) : null,
             'telephone' => $settings->phone,
@@ -61,9 +90,9 @@
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
             <a href="{{ route('home') }}" class="flex items-center gap-2 shrink-0">
                 @if ($settings->logo_path)
-                    <img src="{{ asset('storage/' . $settings->logo_path) }}" alt="{{ $settings->site_name }}" class="h-9 w-auto">
+                    <img src="{{ asset('storage/' . $settings->logo_path) }}" alt="{{ $settings->t('site_name') }}" class="h-9 w-auto">
                 @else
-                    <span class="font-display text-xl font-extrabold tracking-tight text-brandink">{{ $settings->site_name }}</span>
+                    <span class="font-display text-xl font-extrabold tracking-tight text-brandink">{{ $settings->t('site_name') }}</span>
                 @endif
             </a>
 
@@ -75,6 +104,16 @@
                 <a href="{{ route('search') }}" class="text-slate-600 hover:text-brand transition-colors" aria-label="Buscar">
                     <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m21 21-4.3-4.3"/></svg>
                 </a>
+
+                @if ($mlEnabled && count($siteLangs) > 1)
+                    <div class="flex items-center gap-1 text-xs font-semibold" aria-label="Idioma">
+                        @foreach ($siteLangs as $lang)
+                            <a href="{{ $localeUrl($lang) }}" hreflang="{{ $lang['code'] }}"
+                               @class(['px-1.5 py-1 rounded uppercase tracking-wide transition-colors', 'text-brand' => app()->getLocale() === $lang['code'], 'text-slate-400 hover:text-slate-700' => app()->getLocale() !== $lang['code']])
+                               title="{{ $lang['name'] }}">{{ $lang['code'] }}</a>
+                        @endforeach
+                    </div>
+                @endif
 
                 @php $hasShop = ($menuModules ?? collect())->contains(fn ($m) => $m->type === 'tienda'); $cartCount = collect(session('cart', []))->sum(); @endphp
                 @if ($hasShop)
@@ -107,6 +146,15 @@
                 @if (($menuModules ?? collect())->contains(fn ($m) => $m->type === 'tienda'))
                     <a href="{{ route('cart.index') }}" class="py-2 nav-link">Carrito</a>
                 @endif
+                @if ($mlEnabled && count($siteLangs) > 1)
+                    <div class="flex items-center gap-1 pt-2 mt-1 border-t border-slate-200/70 text-xs font-semibold" aria-label="Idioma">
+                        @foreach ($siteLangs as $lang)
+                            <a href="{{ $localeUrl($lang) }}" hreflang="{{ $lang['code'] }}"
+                               @class(['px-2 py-1 rounded uppercase tracking-wide', 'text-brand' => app()->getLocale() === $lang['code'], 'text-slate-500' => app()->getLocale() !== $lang['code']])
+                               title="{{ $lang['name'] }}">{{ $lang['code'] }}</a>
+                        @endforeach
+                    </div>
+                @endif
             </nav>
         </div>
     </header>
@@ -128,9 +176,9 @@
     <footer class="mt-24 text-slate-300" style="background: var(--brand-ink)">
         <div class="max-w-6xl mx-auto px-4 py-14 grid gap-10 md:grid-cols-3">
             <div>
-                <div class="font-display text-white text-xl font-extrabold tracking-tight">{{ $settings->site_name }}</div>
-                @if ($settings->footer_text)
-                    <p class="mt-3 text-sm leading-relaxed text-slate-400 max-w-xs">{{ $settings->footer_text }}</p>
+                <div class="font-display text-white text-xl font-extrabold tracking-tight">{{ $settings->t('site_name') }}</div>
+                @if ($settings->t('footer_text'))
+                    <p class="mt-3 text-sm leading-relaxed text-slate-400 max-w-xs">{{ $settings->t('footer_text') }}</p>
                 @endif
             </div>
             <div class="text-sm space-y-2.5">
@@ -151,7 +199,7 @@
         </div>
         <div class="border-t border-white/10">
             <div class="max-w-6xl mx-auto px-4 py-5 text-xs text-slate-500">
-                © {{ date('Y') }} {{ $settings->site_name }}. Todos los derechos reservados.
+                © {{ date('Y') }} {{ $settings->t('site_name') }}. Todos los derechos reservados.
             </div>
         </div>
     </footer>

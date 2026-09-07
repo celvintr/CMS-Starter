@@ -2,13 +2,18 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasTranslations;
 use Illuminate\Database\Eloquent\Model;
 
 class SiteSetting extends Model
 {
+    use HasTranslations;
+
     protected $guarded = [];
 
     protected $casts = [
+        'languages' => 'array',
+        'translations' => 'array',
         'ai_api_key' => 'encrypted',            // la llave de IA se guarda encriptada
         'stripe_secret_key' => 'encrypted',     // secretos de Stripe encriptados
         'stripe_webhook_secret' => 'encrypted',
@@ -91,6 +96,27 @@ class SiteSetting extends Model
     /**
      * Número de WhatsApp en formato apto para wa.me (solo dígitos).
      */
+    public function defaultLanguage(): string
+    {
+        return $this->default_language ?: 'es';
+    }
+
+    /** @return array<int, array{code:string,name:string}> */
+    public function activeLanguages(): array
+    {
+        $langs = $this->languages ?? [];
+        if (empty($langs)) {
+            return [['code' => $this->defaultLanguage(), 'name' => strtoupper($this->defaultLanguage())]];
+        }
+
+        return $langs;
+    }
+
+    public function languageCodes(): array
+    {
+        return array_values(array_filter(array_map(fn ($l) => $l['code'] ?? null, $this->activeLanguages())));
+    }
+
     public function whatsappLink(): ?string
     {
         if (! $this->whatsapp) {

@@ -21,9 +21,9 @@
                         </div>
                         <div class="p-6">
                             <div class="text-xs uppercase tracking-wider text-slate-400">{{ optional($post->published_at)->format('d M, Y') }}</div>
-                            <h2 class="mt-2 font-display text-xl font-bold tracking-tight text-brandink group-hover:text-brand transition-colors">{{ $post->title }}</h2>
-                            @if ($post->excerpt)
-                                <p class="mt-2 text-sm text-slate-500 leading-relaxed line-clamp-3">{{ $post->excerpt }}</p>
+                            <h2 class="mt-2 font-display text-xl font-bold tracking-tight text-brandink group-hover:text-brand transition-colors">{{ $post->t('title') }}</h2>
+                            @if ($post->t('excerpt'))
+                                <p class="mt-2 text-sm text-slate-500 leading-relaxed line-clamp-3">{{ $post->t('excerpt') }}</p>
                             @endif
                         </div>
                     </a>

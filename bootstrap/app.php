@@ -12,6 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Idioma por prefijo de URL: se ejecuta antes del router (global) para
+        // poder reescribir la ruta y quitar el prefijo /en, /fr…
+        $middleware->prepend(\App\Http\Middleware\SetLocale::class);
+
         $middleware->web(append: [
             \App\Http\Middleware\SecurityHeaders::class,
         ]);

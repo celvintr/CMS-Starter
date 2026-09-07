@@ -51,6 +51,27 @@ class AjustesSitio extends Page implements HasForms
 
     public function form(Form $form): Form
     {
+        // Campos de traducción generados a partir de los idiomas ya guardados.
+        $settings = SiteSetting::current();
+        $default = $settings->defaultLanguage();
+        $langOptions = collect($settings->activeLanguages())->pluck('name', 'code')->all();
+
+        $translationFields = [];
+        foreach ($settings->activeLanguages() as $lang) {
+            if (($lang['code'] ?? null) === $default) {
+                continue;
+            }
+            $code = $lang['code'];
+            $translationFields[] = Forms\Components\Fieldset::make('Traducción · ' . ($lang['name'] ?? strtoupper($code)))
+                ->schema([
+                    Forms\Components\TextInput::make("translations.{$code}.site_name")->label('Nombre del sitio'),
+                    Forms\Components\TextInput::make("translations.{$code}.tagline")->label('Eslogan / Frase'),
+                    Forms\Components\TextInput::make("translations.{$code}.meta_title")->label('Título SEO'),
+                    Forms\Components\Textarea::make("translations.{$code}.meta_description")->label('Descripción SEO')->rows(2),
+                    Forms\Components\Textarea::make("translations.{$code}.footer_text")->label('Texto del pie de página')->rows(2),
+                ])->columns(2);
+        }
+
         return $form
             ->schema([
                 Forms\Components\Section::make('Identidad')
@@ -128,6 +149,30 @@ class AjustesSitio extends Page implements HasForms
                         Forms\Components\Textarea::make('meta_description')->label('Descripción SEO por defecto')->rows(2),
                         Forms\Components\Textarea::make('footer_text')->label('Texto del pie de página')->rows(2),
                     ])->collapsed(),
+
+                Forms\Components\Section::make('Idiomas y traducciones')
+                    ->description('Sitio multilenguaje con URLs por idioma (/en, /es…). El idioma por defecto usa los campos de arriba; los demás se traducen aquí y en cada página o entrada del blog.')
+                    ->icon('heroicon-o-language')
+                    ->visible(fn () => \App\Support\Features::enabled('multilenguaje'))
+                    ->schema(array_merge([
+                        Forms\Components\Select::make('default_language')
+                            ->label('Idioma por defecto')
+                            ->options($langOptions + ['es' => 'Español', 'en' => 'English'])
+                            ->default('es')->native(false)->required()
+                            ->helperText('Se sirve en la raíz del sitio, sin prefijo en la URL.'),
+                        Forms\Components\Repeater::make('languages')
+                            ->label('Idiomas disponibles')
+                            ->schema([
+                                Forms\Components\TextInput::make('code')->label('Código')->placeholder('en')
+                                    ->required()->maxLength(5)
+                                    ->helperText('ISO: en, fr, pt, de…'),
+                                Forms\Components\TextInput::make('name')->label('Nombre')->placeholder('English')->required(),
+                            ])
+                            ->columns(2)->reorderable()->addActionLabel('Agregar idioma')->defaultItems(0)
+                            ->itemLabel(fn (array $state): ?string => $state['name'] ?? $state['code'] ?? 'Idioma')
+                            ->helperText('Incluye también tu idioma por defecto. Guarda para habilitar sus campos de traducción abajo.'),
+                    ], $translationFields))
+                    ->collapsed(),
 
                 Forms\Components\Section::make('Inteligencia artificial')
                     ->description('Conecta tu propia API para generar módulos y plantillas con IA.')

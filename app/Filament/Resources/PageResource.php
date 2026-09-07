@@ -5,6 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PageResource\Pages;
 use App\Models\Module;
 use App\Models\Page;
+use App\Models\SiteSetting;
+use App\Support\Features;
 use App\Support\Pack;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -87,7 +89,52 @@ class PageResource extends Resource
                     ])->collapsed(),
                 ])->columnSpan(1),
             ]),
+
+            // Traducciones (módulo Multilenguaje): un título + contenido por idioma.
+            ...static::translationSections(),
         ]);
+    }
+
+    /**
+     * Secciones de traducción, una por idioma no predeterminado.
+     * Solo aparecen si el módulo Multilenguaje está activo.
+     *
+     * @return array<int, \Filament\Forms\Components\Component>
+     */
+    protected static function translationSections(): array
+    {
+        if (! Features::enabled('multilenguaje') || ! Schema::hasTable('site_settings')) {
+            return [];
+        }
+
+        $settings = SiteSetting::current();
+        $default = $settings->defaultLanguage();
+        $sections = [];
+
+        foreach ($settings->activeLanguages() as $lang) {
+            $code = $lang['code'] ?? null;
+            if (! $code || $code === $default) {
+                continue;
+            }
+
+            $sections[] = Forms\Components\Section::make('Traducción · ' . ($lang['name'] ?? strtoupper($code)))
+                ->description('Versión en ' . ($lang['name'] ?? $code) . '. Los campos vacíos usan el contenido principal.')
+                ->icon('heroicon-o-language')
+                ->collapsed()
+                ->schema([
+                    Forms\Components\TextInput::make("translations.{$code}.title")
+                        ->label('Título de la página'),
+                    Forms\Components\Builder::make("translations.{$code}.content")
+                        ->label('Contenido')
+                        ->blocks(static::contentBlocks())
+                        ->collapsible()
+                        ->cloneable()
+                        ->blockNumbers(false)
+                        ->addActionLabel('Agregar bloque'),
+                ]);
+        }
+
+        return $sections;
     }
 
     /**

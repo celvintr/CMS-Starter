@@ -15,6 +15,10 @@
             <form method="POST" action="{{ route('form.submit', $mod->slug) }}"
                   class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4">
                 @csrf
+                {{-- Honeypot anti-spam --}}
+                <div class="hidden" aria-hidden="true">
+                    <label>No llenar<input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label>
+                </div>
 
                 @if ($errors->any())
                     <div class="rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2">

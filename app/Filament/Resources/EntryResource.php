@@ -115,9 +115,9 @@ class EntryResource extends Resource
             'date' => Forms\Components\DatePicker::make($name)->native(false),
             'select' => Forms\Components\Select::make($name)
                 ->options(static::parseOptions($field['options'] ?? ''))->native(false),
-            'image' => Forms\Components\FileUpload::make($name)->image()->disk('public')->directory('modulos'),
+            'image' => Forms\Components\FileUpload::make($name)->image()->maxSize(5120)->disk('public')->directory('modulos'),
             'gallery' => Forms\Components\FileUpload::make($name)->image()->multiple()->reorderable()
-                ->disk('public')->directory('modulos'),
+                ->maxSize(5120)->disk('public')->directory('modulos'),
             default => Forms\Components\TextInput::make($name),
         };
 

@@ -128,6 +128,26 @@ administrador. Al terminar muestra la URL y las credenciales.
 
 ---
 
+## Seguridad
+
+Protecciones incluidas:
+
+- **Headers de seguridad** en todas las respuestas (X-Frame-Options, X-Content-Type-Options,
+  Referrer-Policy, Permissions-Policy y HSTS bajo HTTPS).
+- **Anti-spam**: honeypot en los formularios públicos + **rate-limit** (8 envíos/min por IP).
+- **Subidas** limitadas a imágenes y tamaño máximo.
+- **Llaves de IA encriptadas** en la base de datos.
+- **Roles**: el cliente (Editor) no accede a módulos, ajustes ni usuarios.
+
+Checklist antes de publicar en producción:
+
+- [ ] `APP_ENV=production` y `APP_DEBUG=false`
+- [ ] Servir por **HTTPS** (activa HSTS y cookies seguras)
+- [ ] `SESSION_SECURE_COOKIE=true`
+- [ ] Crear el administrador y **cambiar** cualquier contraseña de ejemplo
+- [ ] `php artisan config:cache && php artisan route:cache`
+- [ ] Mantener dependencias al día (`composer update`, `npm update`)
+
 ## Licencia
 
 [MIT](LICENSE) — libre para usar, modificar y distribuir.

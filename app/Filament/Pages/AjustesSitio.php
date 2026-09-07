@@ -53,7 +53,7 @@ class AjustesSitio extends Page implements HasForms
                         Forms\Components\TextInput::make('site_name')->label('Nombre del sitio')->required(),
                         Forms\Components\TextInput::make('tagline')->label('Eslogan / Frase'),
                         Forms\Components\FileUpload::make('logo_path')->label('Logo')
-                            ->image()->disk('public')->directory('sitio'),
+                            ->image()->maxSize(3072)->disk('public')->directory('sitio'),
                     ])->columns(2),
 
                 Forms\Components\Section::make('Colores')

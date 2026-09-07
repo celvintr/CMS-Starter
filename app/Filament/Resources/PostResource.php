@@ -57,7 +57,7 @@ class PostResource extends Resource
                             ->label('URL (slug)')->required()->unique(ignoreRecord: true),
                         Forms\Components\FileUpload::make('cover_image')
                             ->label('Imagen de portada')
-                            ->image()->disk('public')->directory('blog'),
+                            ->image()->maxSize(5120)->disk('public')->directory('blog'),
                     ]),
                     Forms\Components\Section::make('SEO')->schema([
                         Forms\Components\TextInput::make('meta_title')->label('Título SEO')->maxLength(70),

@@ -17,10 +17,14 @@ Route::get('/blog/{post:slug}', [BlogController::class, 'show'])->name('blog.sho
 Route::get('/m/{module}', [ModuleController::class, 'index'])->name('module.index');
 Route::get('/m/{module}/{entry}', [ModuleController::class, 'show'])->name('module.show');
 
-Route::post('/enviar-mensaje', [ContactController::class, 'store'])->name('contact.store');
+Route::post('/enviar-mensaje', [ContactController::class, 'store'])
+    ->middleware('throttle:8,1')
+    ->name('contact.store');
 
 // Envío de formularios de módulos tipo "formulario".
-Route::post('/f/{module}', [SubmissionController::class, 'store'])->name('form.submit');
+Route::post('/f/{module}', [SubmissionController::class, 'store'])
+    ->middleware('throttle:8,1')
+    ->name('form.submit');
 
 // Carrito de compras (pedido por WhatsApp).
 Route::get('/carrito', [CartController::class, 'index'])->name('cart.index');

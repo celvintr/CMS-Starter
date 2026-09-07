@@ -9,6 +9,11 @@ class ContactController extends Controller
 {
     public function store(Request $request)
     {
+        // Honeypot: si un bot llenó el campo oculto, fingimos éxito y no guardamos.
+        if ($request->filled('_gotcha')) {
+            return back()->with('sent', '¡Gracias! Tu mensaje fue enviado.');
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'email' => ['nullable', 'email', 'max:150'],

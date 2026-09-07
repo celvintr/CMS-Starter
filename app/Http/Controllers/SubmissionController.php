@@ -12,6 +12,11 @@ class SubmissionController extends Controller
     {
         abort_unless($module->isForm(), 404);
 
+        // Honeypot: si un bot llenó el campo oculto, fingimos éxito y no guardamos.
+        if ($request->filled('_gotcha')) {
+            return back()->with('sent', '¡Gracias! Tu información fue enviada correctamente.');
+        }
+
         // Reglas de validación dinámicas según los campos del formulario.
         $rules = [];
         foreach ($module->fieldList() as $field) {

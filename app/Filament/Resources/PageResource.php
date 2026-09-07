@@ -98,7 +98,7 @@ class PageResource extends Resource
                     Forms\Components\TextInput::make('heading')->label('Título grande')->required(),
                     Forms\Components\Textarea::make('subheading')->label('Subtítulo')->rows(2),
                     Forms\Components\FileUpload::make('image')->label('Imagen de fondo')
-                        ->image()->disk('public')->directory('hero'),
+                        ->image()->maxSize(5120)->disk('public')->directory('hero'),
                     Forms\Components\TextInput::make('button_text')->label('Texto del botón'),
                     Forms\Components\TextInput::make('button_url')->label('Enlace del botón')->default('#contacto'),
                 ]),
@@ -144,7 +144,7 @@ class PageResource extends Resource
                 ->schema([
                     Forms\Components\TextInput::make('heading')->label('Título de la galería'),
                     Forms\Components\FileUpload::make('images')->label('Imágenes')
-                        ->image()->multiple()->reorderable()
+                        ->image()->multiple()->reorderable()->maxSize(5120)
                         ->disk('public')->directory('galeria'),
                 ]),
 
@@ -153,7 +153,7 @@ class PageResource extends Resource
                 ->icon('heroicon-o-view-columns')
                 ->schema([
                     Forms\Components\FileUpload::make('image')->label('Imagen')
-                        ->image()->disk('public')->directory('secciones'),
+                        ->image()->maxSize(5120)->disk('public')->directory('secciones'),
                     Forms\Components\Select::make('image_side')->label('Lado de la imagen')
                         ->options(['left' => 'Izquierda', 'right' => 'Derecha'])->default('left'),
                     Forms\Components\TextInput::make('heading')->label('Título'),

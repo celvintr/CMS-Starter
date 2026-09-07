@@ -11,6 +11,10 @@
         <form action="{{ route('contact.store') }}" method="POST" class="card p-7 md:p-8 space-y-5 hover:!translate-y-0">
             @csrf
             <input type="hidden" name="source_url" value="{{ url()->current() }}">
+            {{-- Honeypot anti-spam: humanos no lo ven ni lo llenan --}}
+            <div class="hidden" aria-hidden="true">
+                <label>No llenar<input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label>
+            </div>
 
             @if ($errors->any())
                 <div class="rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2.5">

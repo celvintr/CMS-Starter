@@ -15,7 +15,7 @@ class AiGenerator
 {
     public const MODULE_TYPES = ['generico', 'tienda', 'galeria', 'equipo', 'servicios', 'faq', 'formulario'];
     public const FIELD_TYPES = ['text', 'textarea', 'richtext', 'email', 'number', 'boolean', 'date', 'select', 'image', 'gallery'];
-    public const BLOCK_TYPES = ['hero', 'richtext', 'features', 'image_text', 'cta', 'contact', 'gallery', 'module_list', 'form'];
+    public const BLOCK_TYPES = ['hero', 'richtext', 'features', 'image_text', 'cta', 'contact', 'gallery', 'module_list', 'form', 'testimonios', 'precios', 'faq', 'mapa', 'video', 'stats'];
     public const FEATURE_ICONS = ['bolt', 'shield', 'sparkles', 'check', 'truck', 'clock', 'heart', 'star', 'chat', 'phone', 'tag', 'cube'];
 
     /**

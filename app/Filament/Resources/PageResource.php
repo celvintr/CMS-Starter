@@ -211,6 +211,76 @@ class PageResource extends Resource
                     Forms\Components\Textarea::make('subheading')->label('Subtítulo')->rows(2),
                     Forms\Components\TextInput::make('button_text')->label('Texto del botón')->default('Enviar'),
                 ]),
+
+            Forms\Components\Builder\Block::make('testimonios')
+                ->label('Testimonios')
+                ->icon('heroicon-o-chat-bubble-left-right')
+                ->schema([
+                    Forms\Components\TextInput::make('heading')->label('Título')->default('Lo que dicen nuestros clientes'),
+                    Forms\Components\Repeater::make('items')->label('Testimonios')->schema([
+                        Forms\Components\Textarea::make('quote')->label('Comentario')->rows(3)->required(),
+                        Forms\Components\TextInput::make('author')->label('Nombre')->required(),
+                        Forms\Components\TextInput::make('role')->label('Cargo / Empresa'),
+                        Forms\Components\FileUpload::make('photo')->label('Foto')->image()->maxSize(3072)->avatar()
+                            ->disk('public')->directory('testimonios'),
+                    ])->defaultItems(2)->addActionLabel('Agregar testimonio'),
+                ]),
+
+            Forms\Components\Builder\Block::make('precios')
+                ->label('Precios / Planes')
+                ->icon('heroicon-o-currency-dollar')
+                ->schema([
+                    Forms\Components\TextInput::make('heading')->label('Título')->default('Planes'),
+                    Forms\Components\Repeater::make('plans')->label('Planes')->schema([
+                        Forms\Components\TextInput::make('name')->label('Nombre del plan')->required(),
+                        Forms\Components\TextInput::make('price')->label('Precio')->required()->placeholder('L 500'),
+                        Forms\Components\TextInput::make('period')->label('Periodo')->placeholder('/mes'),
+                        Forms\Components\Textarea::make('features')->label('Características (una por línea)')->rows(4),
+                        Forms\Components\TextInput::make('button_text')->label('Texto del botón')->default('Elegir'),
+                        Forms\Components\TextInput::make('button_url')->label('Enlace')->default('#contacto'),
+                        Forms\Components\Toggle::make('featured')->label('Destacar este plan'),
+                    ])->defaultItems(3)->addActionLabel('Agregar plan'),
+                ]),
+
+            Forms\Components\Builder\Block::make('faq')
+                ->label('Preguntas frecuentes')
+                ->icon('heroicon-o-question-mark-circle')
+                ->schema([
+                    Forms\Components\TextInput::make('heading')->label('Título')->default('Preguntas frecuentes'),
+                    Forms\Components\Repeater::make('items')->label('Preguntas')->schema([
+                        Forms\Components\TextInput::make('question')->label('Pregunta')->required(),
+                        Forms\Components\Textarea::make('answer')->label('Respuesta')->rows(3)->required(),
+                    ])->defaultItems(3)->addActionLabel('Agregar pregunta'),
+                ]),
+
+            Forms\Components\Builder\Block::make('mapa')
+                ->label('Mapa')
+                ->icon('heroicon-o-map-pin')
+                ->schema([
+                    Forms\Components\TextInput::make('heading')->label('Título'),
+                    Forms\Components\TextInput::make('address')->label('Dirección o lugar')->required()
+                        ->helperText('Ej: Parque Central, Tegucigalpa, Honduras'),
+                ]),
+
+            Forms\Components\Builder\Block::make('video')
+                ->label('Video')
+                ->icon('heroicon-o-play-circle')
+                ->schema([
+                    Forms\Components\TextInput::make('heading')->label('Título'),
+                    Forms\Components\TextInput::make('url')->label('URL de YouTube o Vimeo')->required()
+                        ->placeholder('https://www.youtube.com/watch?v=...'),
+                ]),
+
+            Forms\Components\Builder\Block::make('stats')
+                ->label('Estadísticas / Contadores')
+                ->icon('heroicon-o-chart-bar')
+                ->schema([
+                    Forms\Components\TextInput::make('heading')->label('Título'),
+                    Forms\Components\Repeater::make('items')->label('Datos')->schema([
+                        Forms\Components\TextInput::make('number')->label('Número')->required()->placeholder('+500'),
+                        Forms\Components\TextInput::make('label')->label('Etiqueta')->required()->placeholder('Clientes felices'),
+                    ])->columns(2)->defaultItems(4)->grid(2)->addActionLabel('Agregar dato'),
+                ]),
         ];
     }
 

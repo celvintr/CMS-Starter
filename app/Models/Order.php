@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     protected $fillable = [
-        'reference', 'customer_name', 'customer_email', 'customer_phone',
+        'reference', 'provider', 'customer_name', 'customer_email', 'customer_phone',
         'items', 'total', 'currency', 'status',
-        'stripe_session_id', 'stripe_payment_intent', 'paid_at',
+        'stripe_session_id', 'stripe_payment_intent',
+        'paypal_order_id', 'paypal_capture_id', 'paid_at',
     ];
 
     protected $casts = [

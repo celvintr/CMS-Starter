@@ -13,6 +13,8 @@ class SiteSetting extends Model
         'stripe_secret_key' => 'encrypted',     // secretos de Stripe encriptados
         'stripe_webhook_secret' => 'encrypted',
         'stripe_enabled' => 'boolean',
+        'paypal_secret' => 'encrypted',         // secreto de PayPal encriptado
+        'paypal_enabled' => 'boolean',
     ];
 
     /**
@@ -21,6 +23,14 @@ class SiteSetting extends Model
     public function stripeReady(): bool
     {
         return (bool) $this->stripe_enabled && ! empty($this->stripe_secret_key);
+    }
+
+    /**
+     * ¿PayPal está listo para cobrar? (activado y con credenciales)
+     */
+    public function paypalReady(): bool
+    {
+        return (bool) $this->paypal_enabled && ! empty($this->paypal_client_id) && ! empty($this->paypal_secret);
     }
 
     /**

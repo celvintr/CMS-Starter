@@ -6,6 +6,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PayPalController;
 use App\Http\Controllers\SubmissionController;
 use Illuminate\Support\Facades\Route;
 
@@ -39,6 +40,11 @@ Route::post('/pago/checkout', [PaymentController::class, 'checkout'])->name('pag
 Route::get('/pago/exito', [PaymentController::class, 'success'])->name('pago.exito');
 Route::get('/pago/cancelado', [PaymentController::class, 'cancel'])->name('pago.cancelado');
 Route::post('/stripe/webhook', [PaymentController::class, 'webhook'])->name('stripe.webhook');
+
+// Pagos con PayPal (aprobar + capturar).
+Route::post('/pago/paypal/checkout', [PayPalController::class, 'checkout'])->name('paypal.checkout');
+Route::get('/pago/paypal/capturar', [PayPalController::class, 'capture'])->name('paypal.capture');
+Route::get('/pago/paypal/cancelado', [PayPalController::class, 'cancel'])->name('paypal.cancel');
 
 // Páginas dinámicas por slug — debe ir al final (captura cualquier ruta restante).
 Route::get('/{page:slug}', [PageController::class, 'show'])

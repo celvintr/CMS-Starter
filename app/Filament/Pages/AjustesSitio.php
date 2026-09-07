@@ -42,6 +42,7 @@ class AjustesSitio extends Page implements HasForms
         $attrs['ai_api_key'] = '';
         $attrs['stripe_secret_key'] = '';
         $attrs['stripe_webhook_secret'] = '';
+        $attrs['paypal_secret'] = '';
         $this->form->fill($attrs);
     }
 
@@ -132,6 +133,25 @@ class AjustesSitio extends Page implements HasForms
                             ->placeholder('•••••••• (se guarda encriptada)')
                             ->helperText('Del endpoint /stripe/webhook en tu panel de Stripe.'),
                     ])->columns(2)->collapsed(),
+
+                Forms\Components\Section::make('Pagos (PayPal)')
+                    ->description('Cobra con PayPal (el cliente aprueba y paga en PayPal).')
+                    ->icon('heroicon-o-banknotes')
+                    ->schema([
+                        Forms\Components\Toggle::make('paypal_enabled')
+                            ->label('Activar pagos con PayPal'),
+                        Forms\Components\Select::make('paypal_mode')
+                            ->label('Modo')
+                            ->options(['sandbox' => 'Sandbox (pruebas)', 'live' => 'Producción'])
+                            ->default('sandbox')->native(false),
+                        Forms\Components\TextInput::make('paypal_client_id')
+                            ->label('Client ID'),
+                        Forms\Components\TextInput::make('paypal_secret')
+                            ->label('Secret')
+                            ->password()->revealable()
+                            ->placeholder('•••••••• (se guarda encriptada)')
+                            ->helperText('Déjalo vacío para no cambiar el existente.'),
+                    ])->columns(2)->collapsed(),
             ])
             ->statePath('data');
     }
@@ -141,7 +161,7 @@ class AjustesSitio extends Page implements HasForms
         $data = $this->form->getState();
 
         // Si no escribieron un secreto nuevo, conservar el existente.
-        foreach (['ai_api_key', 'stripe_secret_key', 'stripe_webhook_secret'] as $secret) {
+        foreach (['ai_api_key', 'stripe_secret_key', 'stripe_webhook_secret', 'paypal_secret'] as $secret) {
             if (empty($data[$secret])) {
                 unset($data[$secret]);
             }

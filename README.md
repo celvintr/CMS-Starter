@@ -26,7 +26,7 @@ instalación independiente que se genera en segundos.
 
 ### Módulos con lógica ("plugins")
 - **Formularios** que capturan y almacenan envíos, visibles en el panel.
-- **Tienda** con carrito, **pago con tarjeta vía Stripe Checkout** (seguro, hosteado) y
+- **Tienda** con carrito, **pagos con Stripe y PayPal** (checkout seguro y hosteado) y
   registro de **órdenes** en el panel, o **pedido por WhatsApp** como alternativa.
 
 ### Gestión
@@ -139,6 +139,13 @@ administrador. Al terminar muestra la URL y las credenciales.
 
 Los datos de tarjeta se procesan en la página segura de Stripe (checkout hosteado): **nunca tocan
 tu servidor**. Los montos se calculan en el servidor y el pago se confirma por webhook firmado.
+
+## Pagos con PayPal
+
+1. En [developer.paypal.com](https://developer.paypal.com) crea una app y copia el **Client ID** y **Secret** (sandbox para pruebas).
+2. En el panel → **Ajustes del sitio → Pagos (PayPal)**: activa, elige modo (sandbox/live) y pega las credenciales.
+3. En el carrito aparece el botón **PayPal**; el cliente aprueba en PayPal y el pago se **captura**
+   del lado del servidor, marcando la orden como pagada. Las credenciales se guardan **encriptadas**.
 
 ## Seguridad
 

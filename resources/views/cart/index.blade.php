@@ -43,9 +43,9 @@
                 </div>
             </form>
 
-            @if ($settings->stripeReady())
+            @if ($settings->stripeReady() || $settings->paypalReady())
                 <div class="mt-8 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-                    <h2 class="text-lg font-bold mb-4" style="color: var(--brand-ink)">Pagar con tarjeta</h2>
+                    <h2 class="text-lg font-bold mb-4" style="color: var(--brand-ink)">Pagar en línea</h2>
                     <form method="POST" action="{{ route('pago.checkout') }}" class="space-y-4">
                         @csrf
                         @if ($errors->any())
@@ -59,10 +59,22 @@
                         </div>
                         <input type="text" name="telefono" placeholder="Teléfono (opcional)" value="{{ old('telefono') }}"
                                class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:ring-2 focus:ring-brand/40 focus:border-brand outline-none">
-                        <button type="submit" class="btn-primary w-full">
-                            Pagar {{ number_format($total, 2) }} {{ strtoupper($settings->currency ?: 'USD') }}
-                        </button>
-                        <p class="text-xs text-slate-400 text-center">Pago seguro con Stripe. Serás redirigido para completar la compra.</p>
+
+                        <div class="grid gap-3 @if ($settings->stripeReady() && $settings->paypalReady()) md:grid-cols-2 @endif">
+                            @if ($settings->stripeReady())
+                                <button type="submit" formaction="{{ route('pago.checkout') }}" class="btn-primary w-full">
+                                    Tarjeta · {{ number_format($total, 2) }} {{ strtoupper($settings->currency ?: 'USD') }}
+                                </button>
+                            @endif
+                            @if ($settings->paypalReady())
+                                <button type="submit" formaction="{{ route('paypal.checkout') }}"
+                                        class="w-full inline-flex items-center justify-center rounded-full px-7 py-3.5 font-bold transition hover:opacity-90"
+                                        style="background:#ffc439; color:#003087;">
+                                    Pagar con PayPal
+                                </button>
+                            @endif
+                        </div>
+                        <p class="text-xs text-slate-400 text-center">Pago seguro. Serás redirigido para completar la compra.</p>
                     </form>
                 </div>
             @endif

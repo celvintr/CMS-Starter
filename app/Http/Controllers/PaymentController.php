@@ -36,6 +36,7 @@ class PaymentController extends Controller
 
         $order = Order::create([
             'reference' => 'ORD-' . strtoupper(Str::random(8)),
+            'provider' => 'stripe',
             'customer_name' => $request->input('nombre'),
             'customer_email' => $request->input('email'),
             'customer_phone' => $request->input('telefono'),

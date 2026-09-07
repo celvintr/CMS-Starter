@@ -53,6 +53,17 @@
                             <div class="text-2xl font-bold text-brand">{{ number_format((float) $value, 2) }}</div>
                             @break
 
+                        @case('relation')
+                            @php $rel = \App\Models\Entry::find($value); $relMod = $rel?->module; @endphp
+                            @if ($rel && $relMod && $relMod->is_public)
+                                <a href="{{ route('module.show', [$relMod->slug, $rel->slug]) }}" class="text-brand hover:underline font-medium">{{ $rel->title }}</a>
+                            @elseif ($rel)
+                                <div class="text-slate-800">{{ $rel->title }}</div>
+                            @else
+                                <div class="text-slate-400">—</div>
+                            @endif
+                            @break
+
                         @default
                             <div class="text-slate-800 whitespace-pre-line">{{ $value }}</div>
                     @endswitch

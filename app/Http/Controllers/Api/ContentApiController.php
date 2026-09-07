@@ -168,6 +168,9 @@ class ContentApiController extends Controller
                 $data[$key] = asset('storage/' . $data[$key]);
             } elseif (($field['type'] ?? '') === 'gallery') {
                 $data[$key] = array_map(fn ($p) => asset('storage/' . $p), (array) $data[$key]);
+            } elseif (($field['type'] ?? '') === 'relation') {
+                $rel = Entry::find($data[$key]);
+                $data[$key] = $rel ? ['id' => $rel->id, 'title' => $rel->title, 'slug' => $rel->slug] : null;
             }
         }
 

@@ -119,12 +119,19 @@ class ModuleResource extends Resource
                                     'select' => 'Lista de opciones',
                                     'image' => 'Imagen',
                                     'gallery' => 'Galería de imágenes',
+                                    'relation' => 'Relación (a otro módulo)',
                                 ]),
                             Forms\Components\Toggle::make('required')->label('Obligatorio')->inline(false),
                             Forms\Components\TextInput::make('options')
                                 ->label('Opciones (separadas por coma)')
                                 ->helperText('Solo para "Lista de opciones". Ej: Rojo, Verde, Azul')
                                 ->visible(fn (Forms\Get $get) => $get('type') === 'select')
+                                ->columnSpanFull(),
+                            Forms\Components\Select::make('relation_module')
+                                ->label('¿A qué módulo se relaciona?')
+                                ->options(fn () => Module::query()->pluck('name', 'slug')->all())
+                                ->native(false)
+                                ->visible(fn (Forms\Get $get) => $get('type') === 'relation')
                                 ->columnSpanFull(),
                         ])
                         ->columns(2)

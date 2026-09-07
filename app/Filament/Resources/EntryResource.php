@@ -115,6 +115,14 @@ class EntryResource extends Resource
             'date' => Forms\Components\DatePicker::make($name)->native(false),
             'select' => Forms\Components\Select::make($name)
                 ->options(static::parseOptions($field['options'] ?? ''))->native(false),
+            'relation' => Forms\Components\Select::make($name)
+                ->options(function () use ($field) {
+                    $target = ! empty($field['relation_module']) ? Module::firstWhere('slug', $field['relation_module']) : null;
+
+                    return $target ? $target->entries()->orderBy('title')->pluck('title', 'id')->all() : [];
+                })
+                ->searchable()->native(false)
+                ->helperText(! empty($field['relation_module']) ? 'Registro de: ' . $field['relation_module'] : null),
             'image' => Forms\Components\FileUpload::make($name)->image()->maxSize(5120)->disk('public')->directory('modulos'),
             'gallery' => Forms\Components\FileUpload::make($name)->image()->multiple()->reorderable()
                 ->maxSize(5120)->disk('public')->directory('modulos'),
@@ -184,6 +192,8 @@ class EntryResource extends Resource
         return match ($field['type'] ?? 'text') {
             'image' => Tables\Columns\ImageColumn::make($name)->label($label)->disk('public')->height(40),
             'boolean' => Tables\Columns\IconColumn::make($name)->label($label)->boolean(),
+            'relation' => Tables\Columns\TextColumn::make($name)->label($label)
+                ->formatStateUsing(fn ($state) => optional(Entry::find($state))->title ?? '—'),
             'richtext', 'gallery' => null,
             default => Tables\Columns\TextColumn::make($name)->label($label)->limit(40),
         };

@@ -18,8 +18,8 @@ instalación independiente que se genera en segundos.
 - **Módulos dinámicos**: creas tipos de contenido (Productos, Propiedades, Doctores, Cursos…)
   desde el panel, defines sus campos y el CRUD se genera solo. Aparecen automáticamente en el
   menú del administrador.
-- **11 tipos de campo**: texto, texto largo, editor con formato, correo, número/precio, sí/no,
-  fecha, lista de opciones, imagen y galería.
+- **Tipos de campo**: texto, texto largo, editor con formato, correo, número/precio, sí/no,
+  fecha, lista de opciones, imagen, galería y **relación a otro módulo** (CMS relacional).
 - **Constructor de páginas por bloques**: Hero, servicios, galería, imagen+texto, CTA,
   formulario, listado de módulo y más — se arrastran y ordenan.
 - **Plantillas de página** listas para usar (landing, negocio local, tienda, "nosotros").

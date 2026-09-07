@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\SiteSetting;
 use App\Support\Notifier;
@@ -26,7 +27,9 @@ class PayPalController extends Controller
         ]);
 
         // Montos calculados en el servidor desde el carrito.
-        [$items, $total] = (new CartController())->itemsFrom(session('cart', []));
+        $summary = (new CartController())->summary();
+        $items = $summary['items'];
+        $total = $summary['total'];
 
         if (empty($items) || $total <= 0) {
             return redirect()->route('cart.index');
@@ -43,6 +46,8 @@ class PayPalController extends Controller
             'items' => $items,
             'total' => $total,
             'currency' => $currency,
+            'coupon_code' => $summary['coupon']?->code,
+            'discount' => $summary['discount'],
             'status' => 'pending',
         ]);
 
@@ -95,10 +100,11 @@ class PayPalController extends Controller
                     'paypal_capture_id' => data_get($result, 'purchase_units.0.payments.captures.0.id'),
                 ]);
 
+                Coupon::redeem($order->coupon_code);
                 Notifier::order($order);
             }
 
-            session()->forget('cart');
+            session()->forget(['cart', 'coupon']);
 
             return view('pago.exito', compact('order'));
         }

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Coupon;
 use App\Models\Entry;
 use App\Models\SiteSetting;
+use App\Support\Features;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
@@ -22,9 +24,47 @@ class CartController extends Controller
 
     public function index()
     {
-        [$items, $total] = $this->itemsFrom(session('cart', []));
+        return view('cart.index', $this->summary());
+    }
 
-        return view('cart.index', compact('items', 'total'));
+    /**
+     * Aplica un cupón al carrito (lo guarda en sesión si es válido).
+     */
+    public function applyCoupon(Request $request)
+    {
+        if (! Features::enabled('tienda')) {
+            return back();
+        }
+
+        $code = trim((string) $request->input('coupon'));
+        [$items, $subtotal] = $this->itemsFrom(session('cart', []));
+        $moduleIds = collect($items)->pluck('module_id')->filter()->unique()->values()->all();
+
+        $coupon = Coupon::findByCode($code);
+
+        if (! $coupon) {
+            return back()->with('coupon_error', 'Cupón no encontrado.');
+        }
+
+        [$ok, $reason] = $coupon->validateFor($subtotal, $moduleIds);
+
+        if (! $ok) {
+            return back()->with('coupon_error', $reason);
+        }
+
+        session(['coupon' => $coupon->code]);
+
+        return back()->with('sent', 'Cupón aplicado.');
+    }
+
+    /**
+     * Quita el cupón aplicado.
+     */
+    public function removeCoupon()
+    {
+        session()->forget('coupon');
+
+        return back();
     }
 
     public function update(Request $request)
@@ -52,15 +92,53 @@ class CartController extends Controller
 
     public function checkout(Request $request)
     {
-        [$items, $total] = $this->itemsFrom(session('cart', []));
+        $summary = $this->summary();
 
-        if (empty($items)) {
+        if (empty($summary['items'])) {
             return back();
         }
 
-        $url = $this->buildWhatsappUrl($items, $total, $request->input('nombre'), $request->input('nota'));
+        $url = $this->buildWhatsappUrl($summary, $request->input('nombre'), $request->input('nota'));
 
         return redirect()->away($url);
+    }
+
+    /**
+     * Resumen del carrito con cupón aplicado: líneas, subtotal, descuento y total.
+     * El descuento y el cupón se recalculan (y validan) en cada llamada, así que
+     * un cupón que dejó de ser válido simplemente no se aplica.
+     *
+     * @return array{items: array, subtotal: float, discount: float, total: float, coupon: ?\App\Models\Coupon, couponError: ?string}
+     */
+    public function summary(): array
+    {
+        [$items, $subtotal] = $this->itemsFrom(session('cart', []));
+
+        $coupon = null;
+        $discount = 0.0;
+        $couponError = null;
+
+        if (Features::enabled('tienda') && ($code = session('coupon')) && $subtotal > 0) {
+            $found = Coupon::findByCode($code);
+            $moduleIds = collect($items)->pluck('module_id')->filter()->unique()->values()->all();
+
+            if ($found) {
+                [$ok, $reason] = $found->validateFor($subtotal, $moduleIds);
+
+                if ($ok) {
+                    $coupon = $found;
+                    $discount = $found->discountOn($subtotal);
+                } else {
+                    $couponError = $reason;
+                }
+            } else {
+                $couponError = 'El cupón ya no está disponible.';
+            }
+        }
+
+        $total = round(max(0, $subtotal - $discount), 2);
+
+        return compact('items', 'subtotal', 'discount', 'total', 'coupon', 'couponError');
     }
 
     /**
@@ -89,6 +167,7 @@ class CartController extends Controller
 
                 $items[] = [
                     'id' => $id,
+                    'module_id' => $entry->module_id,
                     'title' => $entry->title,
                     'qty' => $qty,
                     'price' => $price,
@@ -102,9 +181,9 @@ class CartController extends Controller
     }
 
     /**
-     * Arma el enlace de WhatsApp con el detalle del pedido.
+     * Arma el enlace de WhatsApp con el detalle del pedido (incluye descuento).
      */
-    public function buildWhatsappUrl(array $items, float $total, ?string $nombre = null, ?string $nota = null): string
+    public function buildWhatsappUrl(array $summary, ?string $nombre = null, ?string $nota = null): string
     {
         $settings = SiteSetting::current();
         $number = preg_replace('/\D+/', '', $settings->whatsapp ?? '');
@@ -114,11 +193,16 @@ class CartController extends Controller
             $lines[] = 'Cliente: ' . $nombre;
             $lines[] = '';
         }
-        foreach ($items as $it) {
+        foreach ($summary['items'] as $it) {
             $lines[] = "• {$it['qty']} x {$it['title']} = " . number_format($it['subtotal'], 2);
         }
         $lines[] = '';
-        $lines[] = '*Total: ' . number_format($total, 2) . '*';
+        if (($summary['discount'] ?? 0) > 0) {
+            $lines[] = 'Subtotal: ' . number_format($summary['subtotal'], 2);
+            $code = $summary['coupon'] ? $summary['coupon']->code : 'cupón';
+            $lines[] = "Descuento ({$code}): -" . number_format($summary['discount'], 2);
+        }
+        $lines[] = '*Total: ' . number_format($summary['total'], 2) . '*';
         if ($nota) {
             $lines[] = '';
             $lines[] = 'Nota: ' . $nota;

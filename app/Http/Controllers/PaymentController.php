@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\SiteSetting;
 use App\Support\Notifier;
@@ -27,7 +28,10 @@ class PaymentController extends Controller
         ]);
 
         // Los montos se calculan en el servidor desde el carrito (nunca del cliente).
-        [$items, $total] = (new CartController())->itemsFrom(session('cart', []));
+        $summary = (new CartController())->summary();
+        $items = $summary['items'];
+        $discount = $summary['discount'];
+        $total = $summary['total'];
 
         if (empty($items) || $total <= 0) {
             return redirect()->route('cart.index');
@@ -44,6 +48,8 @@ class PaymentController extends Controller
             'items' => $items,
             'total' => $total,
             'currency' => $currency,
+            'coupon_code' => $summary['coupon']?->code,
+            'discount' => $discount,
             'status' => 'pending',
         ]);
 
@@ -58,7 +64,8 @@ class PaymentController extends Controller
 
         try {
             $stripe = new StripeClient($settings->stripe_secret_key);
-            $session = $stripe->checkout->sessions->create([
+
+            $params = [
                 'mode' => 'payment',
                 'line_items' => $lineItems,
                 'customer_email' => $order->customer_email,
@@ -66,7 +73,20 @@ class PaymentController extends Controller
                 'metadata' => ['order_reference' => $order->reference],
                 'success_url' => route('pago.exito', ['ref' => $order->reference]) . '&session_id={CHECKOUT_SESSION_ID}',
                 'cancel_url' => route('pago.cancelado', ['ref' => $order->reference]),
-            ]);
+            ];
+
+            // El descuento del cupón se aplica como cupón puntual de Stripe.
+            if ($discount > 0) {
+                $stripeCoupon = $stripe->coupons->create([
+                    'amount_off' => (int) round($discount * 100),
+                    'currency' => $currency,
+                    'duration' => 'once',
+                    'name' => 'Descuento' . ($summary['coupon'] ? ' ' . $summary['coupon']->code : ''),
+                ]);
+                $params['discounts'] = [['coupon' => $stripeCoupon->id]];
+            }
+
+            $session = $stripe->checkout->sessions->create($params);
         } catch (\Throwable $e) {
             $order->update(['status' => 'canceled']);
 
@@ -82,8 +102,8 @@ class PaymentController extends Controller
     {
         $order = Order::where('reference', $request->query('ref'))->first();
 
-        // El pago se confirma por webhook; al volver, limpiamos el carrito.
-        session()->forget('cart');
+        // El pago se confirma por webhook; al volver, limpiamos el carrito y el cupón.
+        session()->forget(['cart', 'coupon']);
 
         return view('pago.exito', compact('order'));
     }
@@ -133,6 +153,7 @@ class PaymentController extends Controller
                     'stripe_payment_intent' => $object->payment_intent ?? null,
                 ]);
 
+                Coupon::redeem($order->coupon_code);
                 Notifier::order($order);
             }
         }

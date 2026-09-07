@@ -35,13 +35,54 @@
                     @endforeach
                 </div>
 
-                <div class="flex items-center justify-between mt-4">
-                    <button type="submit" class="text-sm text-slate-500 hover:text-brand">Actualizar cantidades</button>
-                    <div class="text-2xl font-extrabold" style="color: var(--brand-ink)">
-                        Total: {{ number_format($total, 2) }}
-                    </div>
-                </div>
+                <button type="submit" class="mt-4 text-sm text-slate-500 hover:text-brand">Actualizar cantidades</button>
             </form>
+
+            {{-- Cupón de descuento --}}
+            <div class="mt-4 bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                @if ($coupon)
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="text-sm">
+                            <span class="inline-flex items-center gap-1.5 font-semibold text-emerald-700">
+                                <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Cupón <strong>{{ $coupon->code }}</strong> aplicado
+                            </span>
+                        </div>
+                        <form method="POST" action="{{ route('cart.coupon.remove') }}">
+                            @csrf
+                            <button type="submit" class="text-sm text-slate-400 hover:text-red-600">Quitar</button>
+                        </form>
+                    </div>
+                @else
+                    <form method="POST" action="{{ route('cart.coupon.apply') }}" class="flex items-center gap-3">
+                        @csrf
+                        <input type="text" name="coupon" placeholder="¿Tienes un cupón?" value="{{ old('coupon') }}"
+                               class="flex-1 rounded-xl border border-slate-300 px-4 py-2.5 uppercase tracking-wide focus:ring-2 focus:ring-brand/40 focus:border-brand outline-none">
+                        <button type="submit" class="rounded-xl border border-slate-300 px-5 py-2.5 font-semibold text-slate-700 hover:border-brand hover:text-brand transition-colors">Aplicar</button>
+                    </form>
+                    @if (session('coupon_error'))
+                        <p class="mt-2 text-sm text-red-600">{{ session('coupon_error') }}</p>
+                    @endif
+                @endif
+            </div>
+
+            {{-- Totales --}}
+            <div class="mt-4 bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-2">
+                <div class="flex justify-between text-slate-500">
+                    <span>Subtotal</span>
+                    <span>{{ number_format($subtotal, 2) }}</span>
+                </div>
+                @if ($discount > 0)
+                    <div class="flex justify-between text-emerald-700">
+                        <span>Descuento{{ $coupon ? ' · ' . $coupon->code : '' }}</span>
+                        <span>−{{ number_format($discount, 2) }}</span>
+                    </div>
+                @endif
+                <div class="flex justify-between items-center pt-2 border-t border-slate-100 text-2xl font-extrabold" style="color: var(--brand-ink)">
+                    <span>Total</span>
+                    <span>{{ number_format($total, 2) }}</span>
+                </div>
+            </div>
 
             @if ($settings->stripeReady() || $settings->paypalReady())
                 <div class="mt-8 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">

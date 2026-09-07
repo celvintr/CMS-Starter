@@ -85,6 +85,11 @@ class OrderResource extends Resource
                 Infolists\Components\TextEntry::make('total')->label('Total')
                     ->formatStateUsing(fn ($state, Order $record) => number_format((float) $state, 2) . ' ' . strtoupper($record->currency)),
                 Infolists\Components\TextEntry::make('paid_at')->label('Pagada')->dateTime('d/m/Y H:i')->placeholder('—'),
+                Infolists\Components\TextEntry::make('coupon_code')->label('Cupón')->placeholder('—')
+                    ->visible(fn (Order $record) => ! empty($record->coupon_code)),
+                Infolists\Components\TextEntry::make('discount')->label('Descuento')
+                    ->formatStateUsing(fn ($state, Order $record) => '−' . number_format((float) $state, 2) . ' ' . strtoupper($record->currency))
+                    ->visible(fn (Order $record) => (float) $record->discount > 0),
             ])->columns(2),
 
             Infolists\Components\Section::make('Cliente')->schema([

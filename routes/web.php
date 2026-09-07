@@ -31,6 +31,8 @@ Route::get('/carrito', [CartController::class, 'index'])->name('cart.index');
 Route::post('/carrito/agregar/{entryId}', [CartController::class, 'add'])->name('cart.add');
 Route::post('/carrito/actualizar', [CartController::class, 'update'])->name('cart.update');
 Route::post('/carrito/quitar/{entryId}', [CartController::class, 'remove'])->name('cart.remove');
+Route::post('/carrito/cupon', [CartController::class, 'applyCoupon'])->name('cart.coupon.apply');
+Route::post('/carrito/cupon/quitar', [CartController::class, 'removeCoupon'])->name('cart.coupon.remove');
 Route::post('/carrito/finalizar', [CartController::class, 'checkout'])->name('cart.checkout');
 
 // Pagos con Stripe

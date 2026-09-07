@@ -345,6 +345,20 @@ class PageResource extends Resource
                         Forms\Components\TextInput::make('button_text')->label('Texto del botón')->default('Suscribirme'),
                     ]),
             ] : []),
+
+            // Bloque del módulo Reservas: solo disponible si la función está activa.
+            ...(Features::enabled('reservas') ? [
+                Forms\Components\Builder\Block::make('reservas')
+                    ->label('Reserva de cita')
+                    ->icon('heroicon-o-calendar-days')
+                    ->schema([
+                        Forms\Components\TextInput::make('heading')->label('Título')->default('Reserva tu cita'),
+                        Forms\Components\Textarea::make('subheading')->label('Subtítulo')->rows(2),
+                        Forms\Components\Textarea::make('services')->label('Servicios (uno por línea)')->rows(3)
+                            ->helperText('Si lo dejas vacío, el cliente escribe el servicio libremente.'),
+                        Forms\Components\TextInput::make('button_text')->label('Texto del botón')->default('Solicitar reserva'),
+                    ]),
+            ] : []),
         ];
     }
 

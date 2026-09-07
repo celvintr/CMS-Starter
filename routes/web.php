@@ -8,6 +8,7 @@ use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PayPalController;
+use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\SubmissionController;
@@ -28,6 +29,7 @@ Route::post('/enviar-mensaje', [ContactController::class, 'store'])->middleware(
 Route::post('/f/{module}', [SubmissionController::class, 'store'])->middleware('throttle:8,1')->name('form.submit');
 Route::post('/newsletter/suscribir', [NewsletterController::class, 'subscribe'])->middleware('throttle:5,1')->name('newsletter.subscribe');
 Route::get('/newsletter/baja/{subscriber}', [NewsletterController::class, 'unsubscribe'])->middleware('signed')->name('newsletter.unsubscribe');
+Route::post('/reservas', [ReservationController::class, 'store'])->middleware('throttle:8,1')->name('reservation.store');
 
 // Carrito de compras
 Route::get('/carrito', [CartController::class, 'index'])->name('cart.index');
@@ -58,5 +60,5 @@ Route::get('/', [PageController::class, 'home'])->name('home');
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{post:slug}', [BlogController::class, 'show'])->name('blog.show');
 Route::get('/{page:slug}', [PageController::class, 'show'])
-    ->where('page', '^(?!admin|blog|enviar-mensaje|livewire|storage|css|js|filament|buscar|m|carrito|pago|stripe|f|newsletter|sitemap|robots).*')
+    ->where('page', '^(?!admin|blog|enviar-mensaje|livewire|storage|css|js|filament|buscar|m|carrito|pago|stripe|f|newsletter|reservas|sitemap|robots).*')
     ->name('page.show');

@@ -333,6 +333,18 @@ class PageResource extends Resource
                         Forms\Components\TextInput::make('label')->label('Etiqueta')->required()->placeholder('Clientes felices'),
                     ])->columns(2)->defaultItems(4)->grid(2)->addActionLabel('Agregar dato'),
                 ]),
+
+            // Bloque del módulo Newsletter: solo disponible si la función está activa.
+            ...(Features::enabled('newsletter') ? [
+                Forms\Components\Builder\Block::make('newsletter')
+                    ->label('Boletín / Newsletter')
+                    ->icon('heroicon-o-envelope')
+                    ->schema([
+                        Forms\Components\TextInput::make('heading')->label('Título')->default('Suscríbete a nuestro boletín'),
+                        Forms\Components\Textarea::make('subheading')->label('Subtítulo')->rows(2),
+                        Forms\Components\TextInput::make('button_text')->label('Texto del botón')->default('Suscribirme'),
+                    ]),
+            ] : []),
         ];
     }
 

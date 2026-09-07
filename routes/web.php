@@ -4,6 +4,7 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ModuleController;
+use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PayPalController;
@@ -25,6 +26,8 @@ Route::get('/m/{module}/{entry}', [ModuleController::class, 'show'])->name('modu
 
 Route::post('/enviar-mensaje', [ContactController::class, 'store'])->middleware('throttle:8,1')->name('contact.store');
 Route::post('/f/{module}', [SubmissionController::class, 'store'])->middleware('throttle:8,1')->name('form.submit');
+Route::post('/newsletter/suscribir', [NewsletterController::class, 'subscribe'])->middleware('throttle:5,1')->name('newsletter.subscribe');
+Route::get('/newsletter/baja/{subscriber}', [NewsletterController::class, 'unsubscribe'])->middleware('signed')->name('newsletter.unsubscribe');
 
 // Carrito de compras
 Route::get('/carrito', [CartController::class, 'index'])->name('cart.index');
@@ -55,5 +58,5 @@ Route::get('/', [PageController::class, 'home'])->name('home');
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{post:slug}', [BlogController::class, 'show'])->name('blog.show');
 Route::get('/{page:slug}', [PageController::class, 'show'])
-    ->where('page', '^(?!admin|blog|enviar-mensaje|livewire|storage|css|js|filament|buscar|m|carrito|pago|stripe|f|sitemap|robots).*')
+    ->where('page', '^(?!admin|blog|enviar-mensaje|livewire|storage|css|js|filament|buscar|m|carrito|pago|stripe|f|newsletter|sitemap|robots).*')
     ->name('page.show');

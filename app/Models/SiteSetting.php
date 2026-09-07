@@ -48,7 +48,7 @@ class SiteSetting extends Model
 
         // Fallback automático
         $links = [];
-        foreach (Page::where('is_published', true)->where('show_in_menu', true)->orderBy('sort_order')->orderBy('title')->get() as $p) {
+        foreach (Page::published()->where('show_in_menu', true)->orderBy('sort_order')->orderBy('title')->get() as $p) {
             $links[] = ['label' => $p->title, 'url' => url('/' . $p->slug), 'new_tab' => false];
         }
         foreach (Module::where('is_public', true)->orderBy('sort_order')->orderBy('name')->get() as $m) {

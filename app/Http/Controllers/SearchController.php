@@ -17,7 +17,7 @@ class SearchController extends Controller
         if (mb_strlen($q) >= 2) {
             $like = '%' . $q . '%';
 
-            foreach (Page::where('is_published', true)->where('title', 'like', $like)->limit(10)->get() as $page) {
+            foreach (Page::published()->where('title', 'like', $like)->limit(10)->get() as $page) {
                 $results->push([
                     'type' => 'Página',
                     'title' => $page->title,
@@ -26,7 +26,7 @@ class SearchController extends Controller
                 ]);
             }
 
-            foreach (Post::where('is_published', true)
+            foreach (Post::published()
                 ->where(fn ($w) => $w->where('title', 'like', $like)->orWhere('excerpt', 'like', $like)->orWhere('body', 'like', $like))
                 ->limit(10)->get() as $post) {
                 $results->push([
@@ -37,7 +37,7 @@ class SearchController extends Controller
                 ]);
             }
 
-            foreach (Entry::with('module')->where('is_published', true)->where('title', 'like', $like)->limit(15)->get() as $entry) {
+            foreach (Entry::with('module')->published()->where('title', 'like', $like)->limit(15)->get() as $entry) {
                 if ($entry->module && $entry->module->is_public) {
                     $results->push([
                         'type' => $entry->module->singularLabel(),

@@ -5,7 +5,7 @@
     $colClass = ['2' => 'md:grid-cols-2', '3' => 'md:grid-cols-3', '4' => 'md:grid-cols-4'][$cols] ?? 'md:grid-cols-3';
 
     $items = $mod
-        ? $mod->entries()->where('is_published', true)->orderBy('sort_order')->orderByDesc('created_at')->limit($limit)->get()
+        ? $mod->entries()->published()->orderBy('sort_order')->orderByDesc('created_at')->limit($limit)->get()
         : collect();
 
     $imgField = $mod?->fieldList()->firstWhere('type', 'image');

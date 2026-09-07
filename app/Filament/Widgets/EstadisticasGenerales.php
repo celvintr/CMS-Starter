@@ -25,7 +25,7 @@ class EstadisticasGenerales extends BaseWidget
 
         return [
             Stat::make('Páginas', Page::count())
-                ->description(Page::where('is_published', true)->count() . ' publicadas')
+                ->description(Page::published()->count() . ' publicadas')
                 ->descriptionIcon('heroicon-m-document-text')
                 ->color('primary'),
 

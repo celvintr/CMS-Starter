@@ -39,7 +39,7 @@ class ContentApiController extends Controller
 
     public function pages()
     {
-        $pages = Page::where('is_published', true)
+        $pages = Page::published()
             ->orderBy('sort_order')
             ->get(['title', 'slug', 'meta_title', 'meta_description', 'updated_at']);
 
@@ -48,7 +48,7 @@ class ContentApiController extends Controller
 
     public function page(string $slug)
     {
-        $page = Page::where('slug', $slug)->where('is_published', true)->firstOrFail();
+        $page = Page::where('slug', $slug)->published()->firstOrFail();
 
         return response()->json([
             'title' => $page->title,
@@ -64,7 +64,7 @@ class ContentApiController extends Controller
 
     public function posts()
     {
-        $posts = Post::where('is_published', true)
+        $posts = Post::published()
             ->orderByDesc('published_at')
             ->paginate(12, ['title', 'slug', 'excerpt', 'cover_image', 'published_at']);
 
@@ -81,7 +81,7 @@ class ContentApiController extends Controller
 
     public function post(string $slug)
     {
-        $post = Post::where('slug', $slug)->where('is_published', true)->firstOrFail();
+        $post = Post::where('slug', $slug)->published()->firstOrFail();
 
         return response()->json([
             'title' => $post->title,
@@ -129,7 +129,7 @@ class ContentApiController extends Controller
         $module = Module::where('slug', $slug)->firstOrFail();
 
         $entries = $module->entries()
-            ->where('is_published', true)
+            ->published()
             ->orderBy('sort_order')
             ->orderByDesc('created_at')
             ->paginate(20);
@@ -145,7 +145,7 @@ class ContentApiController extends Controller
 
         $record = $module->entries()
             ->where('slug', $entry)
-            ->where('is_published', true)
+            ->published()
             ->firstOrFail();
 
         return response()->json($this->transformEntry($record, $module));

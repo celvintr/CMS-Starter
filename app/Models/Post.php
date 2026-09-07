@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Publishable;
 use Illuminate\Database\Eloquent\Model;
 
 class Post extends Model
 {
+    use Publishable;
+
     protected $fillable = [
         'title', 'slug', 'excerpt', 'body', 'cover_image',
         'is_published', 'published_at', 'meta_title', 'meta_description',

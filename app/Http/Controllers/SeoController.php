@@ -14,18 +14,18 @@ class SeoController extends Controller
 
         $urls[] = ['loc' => url('/')];
 
-        foreach (Page::where('is_published', true)->where('slug', '!=', 'home')->get() as $page) {
+        foreach (Page::published()->where('slug', '!=', 'home')->get() as $page) {
             $urls[] = ['loc' => url('/' . $page->slug), 'lastmod' => optional($page->updated_at)->toAtomString()];
         }
 
         $urls[] = ['loc' => route('blog.index')];
-        foreach (Post::where('is_published', true)->get() as $post) {
+        foreach (Post::published()->get() as $post) {
             $urls[] = ['loc' => route('blog.show', $post->slug), 'lastmod' => optional($post->updated_at)->toAtomString()];
         }
 
         foreach (Module::where('is_public', true)->get() as $module) {
             $urls[] = ['loc' => route('module.index', $module->slug)];
-            foreach ($module->entries()->where('is_published', true)->get() as $entry) {
+            foreach ($module->entries()->published()->get() as $entry) {
                 $urls[] = ['loc' => route('module.show', [$module->slug, $entry->slug]), 'lastmod' => optional($entry->updated_at)->toAtomString()];
             }
         }

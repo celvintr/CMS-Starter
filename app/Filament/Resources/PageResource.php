@@ -57,7 +57,12 @@ class PageResource extends Resource
                     Forms\Components\Section::make('Publicación')->schema([
                         Forms\Components\Toggle::make('is_published')
                             ->label('Publicada')
+                            ->helperText('Apágala para guardar como borrador.')
                             ->default(true),
+                        Forms\Components\DateTimePicker::make('published_at')
+                            ->label('Programar para')
+                            ->native(false)
+                            ->helperText('Vacío = se publica ya. Fecha futura = se publica sola en ese momento.'),
                         Forms\Components\Toggle::make('show_in_menu')
                             ->label('Mostrar en el menú')
                             ->default(true),

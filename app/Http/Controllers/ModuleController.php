@@ -11,7 +11,7 @@ class ModuleController extends Controller
         abort_if(! $module->is_public, 404);
 
         $entries = $module->entries()
-            ->where('is_published', true)
+            ->published()
             ->orderBy('sort_order')
             ->orderByDesc('created_at')
             ->paginate(12);
@@ -25,7 +25,7 @@ class ModuleController extends Controller
 
         $entry = $module->entries()
             ->where('slug', $entry)
-            ->where('is_published', true)
+            ->published()
             ->firstOrFail();
 
         return view('modules.show', compact('module', 'entry'));

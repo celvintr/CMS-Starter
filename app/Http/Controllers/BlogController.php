@@ -8,7 +8,7 @@ class BlogController extends Controller
 {
     public function index()
     {
-        $posts = Post::where('is_published', true)
+        $posts = Post::published()
             ->orderByDesc('published_at')
             ->paginate(9);
 
@@ -17,7 +17,7 @@ class BlogController extends Controller
 
     public function show(Post $post)
     {
-        abort_if(! $post->is_published, 404);
+        abort_if(! $post->isVisible(), 404);
 
         return view('blog.show', compact('post'));
     }

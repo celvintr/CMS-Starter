@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
                 View::share('settings', SiteSetting::current());
 
                 View::share('menuPages', Page::query()
-                    ->where('is_published', true)
+                    ->published()
                     ->where('show_in_menu', true)
                     ->orderBy('sort_order')
                     ->orderBy('title')

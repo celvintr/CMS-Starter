@@ -8,7 +8,7 @@ class PageController extends Controller
 {
     public function home()
     {
-        $page = Page::where('slug', 'home')->where('is_published', true)->first();
+        $page = Page::where('slug', 'home')->published()->first();
 
         abort_if(! $page, 404);
 
@@ -17,7 +17,7 @@ class PageController extends Controller
 
     public function show(Page $page)
     {
-        abort_if(! $page->is_published, 404);
+        abort_if(! $page->isVisible(), 404);
 
         return view('page', compact('page'));
     }

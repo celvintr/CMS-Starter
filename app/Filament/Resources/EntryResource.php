@@ -86,7 +86,11 @@ class EntryResource extends Resource
 
                 Forms\Components\Group::make([
                     Forms\Components\Section::make('Publicación')->schema([
-                        Forms\Components\Toggle::make('is_published')->label('Publicado')->default(true),
+                        Forms\Components\Toggle::make('is_published')->label('Publicado')
+                            ->helperText('Apágalo para borrador.')->default(true),
+                        Forms\Components\DateTimePicker::make('published_at')->label('Programar para')
+                            ->native(false)
+                            ->helperText('Vacío = ya. Fecha futura = programado.'),
                         Forms\Components\TextInput::make('slug')->label('Slug (URL)'),
                         Forms\Components\TextInput::make('sort_order')->label('Orden')->numeric()->default(0),
                     ]),

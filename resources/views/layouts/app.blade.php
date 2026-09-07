@@ -10,23 +10,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: '{{ $settings->primary_color ?: '#2563eb' }}',
-                        brandink: '{{ $settings->secondary_color ?: '#0f172a' }}',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                        display: ['"Bricolage Grotesque"', 'Inter', 'sans-serif'],
-                    },
-                },
-            },
-        };
-    </script>
+    @vite('resources/css/app.css')
+
     <style>
         :root {
             --brand: {{ $settings->primary_color ?: '#2563eb' }};
@@ -36,19 +21,6 @@
         @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; } }
         @keyframes riseIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
         .rise { animation: riseIn .7s cubic-bezier(.2,.7,.2,1) both; }
-    </style>
-    <style type="text/tailwindcss">
-        @layer components {
-            .eyebrow { @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-brand; }
-            .eyebrow::before { content: ""; @apply inline-block h-px w-6 bg-brand; }
-            .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand px-7 py-3.5 font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg; }
-            .btn-outline { @apply inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 px-7 py-3.5 font-semibold text-slate-800 transition-colors hover:border-brand hover:text-brand; }
-            .card { @apply rounded-2xl border border-slate-200/80 bg-white transition-all duration-300 hover:-translate-y-1; box-shadow: 0 1px 3px rgba(15,23,42,.04); }
-            .card:hover { box-shadow: 0 22px 50px -24px rgba(15,23,42,.28); }
-            .icon-tile { @apply inline-flex h-12 w-12 items-center justify-center rounded-xl text-brand; background: color-mix(in srgb, var(--brand) 12%, white); }
-            .section-title { @apply font-display text-3xl md:text-[2.6rem] leading-[1.05] font-extrabold tracking-tight text-brandink; }
-            .nav-link { @apply text-[15px] font-medium text-slate-600 transition-colors hover:text-brand; }
-        }
     </style>
 </head>
 <body class="font-sans bg-[#fafaf9] text-slate-700 antialiased">

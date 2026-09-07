@@ -66,12 +66,16 @@ instalación independiente que se genera en segundos.
 git clone <este-repo> cms-starter
 cd cms-starter
 composer install
+npm install
+npm run build          # compila el CSS (Tailwind v4 + Vite)
 cp .env.example .env
 php artisan key:generate
 php artisan migrate --seed --seeder=Database\\Seeders\\DemoContentSeeder
 php artisan storage:link
 php artisan serve
 ```
+
+> Para desarrollar el frontend con recarga en vivo: `npm run dev` (en otra terminal).
 
 - Sitio: `http://localhost:8000`
 - Panel: `http://localhost:8000/admin`
@@ -99,11 +103,12 @@ administrador. Al terminar muestra la URL y las credenciales.
 
 ## Despliegue en hosting compartido (cPanel)
 
-1. PHP 8.2+ en el selector de versión de PHP.
-2. Base de datos MySQL y credenciales en `.env`.
-3. Apunta el dominio a la carpeta `/public`.
-4. `php artisan migrate --force && php artisan storage:link && php artisan config:cache`.
-5. Filament trae sus assets compilados: **no requiere Node en el servidor**.
+1. **Compila los assets localmente** antes de subir: `npm run build` (genera `public/build`).
+2. PHP 8.2+ en el selector de versión de PHP.
+3. Base de datos MySQL y credenciales en `.env`.
+4. Sube el proyecto **con la carpeta `public/build`** y apunta el dominio a `/public`.
+5. `php artisan migrate --force && php artisan storage:link && php artisan config:cache`.
+6. **No se necesita Node en el servidor**: Tailwind ya está compilado y Filament trae sus assets.
 
 ---
 

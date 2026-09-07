@@ -5,6 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', $settings->meta_title ?: $settings->site_name)</title>
     <meta name="description" content="@yield('meta_description', $settings->meta_description)">
+    <link rel="canonical" href="{{ url()->current() }}">
+
+    {{-- Open Graph / Twitter (para compartir en redes y WhatsApp) --}}
+    <meta property="og:site_name" content="{{ $settings->site_name }}">
+    <meta property="og:title" content="@yield('og_title', $settings->meta_title ?: $settings->site_name)">
+    <meta property="og:description" content="@yield('meta_description', $settings->meta_description)">
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:url" content="{{ url()->current() }}">
+    @hasSection('og_image')
+        <meta property="og:image" content="@yield('og_image')">
+    @elseif ($settings->logo_path)
+        <meta property="og:image" content="{{ asset('storage/' . $settings->logo_path) }}">
+    @endif
+    <meta name="twitter:card" content="summary_large_image">
+
+    {{-- Datos estructurados: Organización --}}
+    @php
+        $org = array_filter([
+            '@context' => 'https://schema.org',
+            '@type' => 'Organization',
+            'name' => $settings->site_name,
+            'url' => url('/'),
+            'logo' => $settings->logo_path ? asset('storage/' . $settings->logo_path) : null,
+            'telephone' => $settings->phone,
+            'email' => $settings->email,
+            'sameAs' => array_values(array_filter([$settings->facebook, $settings->instagram, $settings->tiktok])),
+        ]);
+    @endphp
+    <script type="application/ld+json">{!! json_encode($org, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+
+    @yield('head')
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

@@ -2,6 +2,22 @@
 
 @section('title', ($post->meta_title ?: $post->title) . ' — ' . $settings->site_name)
 @section('meta_description', $post->meta_description ?: $post->excerpt)
+@section('og_type', 'article')
+@if ($post->cover_image)
+    @section('og_image', asset('storage/' . $post->cover_image))
+@endif
+
+@section('head')
+    <script type="application/ld+json">{!! json_encode(array_filter([
+        '@context' => 'https://schema.org',
+        '@type' => 'Article',
+        'headline' => $post->title,
+        'description' => $post->excerpt,
+        'image' => $post->cover_image ? asset('storage/' . $post->cover_image) : null,
+        'datePublished' => optional($post->published_at)->toAtomString(),
+        'author' => ['@type' => 'Organization', 'name' => $settings->site_name],
+    ]), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+@endsection
 
 @section('content')
     <article class="max-w-3xl mx-auto px-4 py-14">

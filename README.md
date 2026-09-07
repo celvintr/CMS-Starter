@@ -40,6 +40,11 @@ instalación independiente que se genera en segundos.
 - Diseño propio con tipografía **Bricolage Grotesque + Inter**, íconos SVG, totalmente
   **responsive** y **theme-aware** al color de marca.
 
+### SEO
+- **`sitemap.xml`** y **`robots.txt`** automáticos, **Open Graph + Twitter Cards** (para que se
+  vea bien al compartir en redes y WhatsApp), **canonical** y **datos estructurados JSON-LD**
+  (Organización + Artículo en el blog).
+
 ### API / Headless
 - API REST de solo lectura para consumir el contenido desde **apps móviles, otros frontends
   (Next.js, etc.) o integraciones**. Autenticación por **API keys** gestionadas desde el panel.

@@ -1,5 +1,11 @@
 # CMS Starter — Laravel 12 + Filament
 
+![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
+![PHP](https://img.shields.io/badge/PHP-8.2%2B-777bb4)
+![Laravel](https://img.shields.io/badge/Laravel-12-ff2d20)
+![Filament](https://img.shields.io/badge/Filament-3-fdae4b)
+![Tailwind](https://img.shields.io/badge/Tailwind-4-38bdf8)
+
 Un **CMS a medida, sin límites de plantilla**, pensado para agencias y freelancers que
 construyen muchos sitios administrables. En lugar de instalar plugins, **creas tus propios
 módulos de contenido desde el panel** (como los Custom Post Types de WordPress, pero de
@@ -9,6 +15,24 @@ instalación independiente que se genera en segundos.
 <p align="center">
   <img src="screenshots/home.png" alt="Página de inicio" width="820">
 </p>
+
+---
+
+## Contenido
+
+- [Características](#características)
+- [Capturas](#capturas)
+- [Stack](#stack)
+- [Requisitos](#requisitos)
+- [Instalación](#instalación)
+- [Un sitio nuevo por cliente](#un-sitio-nuevo-por-cliente-windows--laragon)
+- [Despliegue en cPanel](#despliegue-en-hosting-compartido-cpanel)
+- [API / Headless](#api--headless)
+- [Pagos con Stripe](#pagos-con-stripe) · [PayPal](#pagos-con-paypal)
+- [Seguridad](#seguridad)
+- [Contribuir](#contribuir)
+- [Créditos](#créditos)
+- [Licencia](#licencia)
 
 ---
 
@@ -84,15 +108,26 @@ instalación independiente que se genera en segundos.
 
 - **Laravel 12** (PHP 8.2+)
 - **Filament 3** (panel de administración)
-- **Blade + Tailwind CSS** (frontend)
+- **Blade + Tailwind CSS 4** (frontend)
 - **MySQL** (producción) / **SQLite** (desarrollo)
+- **Stripe** y **PayPal** (pagos), **Vite** (build)
+
+---
+
+## Requisitos
+
+- **PHP 8.2 o superior** con extensiones: `mbstring`, `openssl`, `pdo`, `fileinfo`, `curl`,
+  `gd`, `intl`, `zip` (y `pdo_sqlite` para desarrollo o `pdo_mysql` para producción).
+- **Composer 2**
+- **Node.js 18+** y **npm** (solo para compilar los assets; no se necesita en el servidor)
+- **MySQL 8** (producción) o **SQLite** (desarrollo)
 
 ---
 
 ## Instalación
 
 ```bash
-git clone <este-repo> cms-starter
+git clone https://github.com/celvintr/CMS-Starter.git cms-starter
 cd cms-starter
 composer install
 npm install
@@ -193,6 +228,32 @@ Checklist antes de publicar en producción:
 - [ ] Crear el administrador y **cambiar** cualquier contraseña de ejemplo
 - [ ] `php artisan config:cache && php artisan route:cache`
 - [ ] Mantener dependencias al día (`composer update`, `npm update`)
+
+> ¿Encontraste una vulnerabilidad? **No abras un issue público** — sigue [SECURITY.md](SECURITY.md).
+
+## Contribuir
+
+¡Las contribuciones son bienvenidas! Este proyecto crece con la comunidad.
+
+1. Haz un **fork** y crea una rama (`git checkout -b mi-mejora`).
+2. Sigue el estilo del código existente (PSR-12) y prueba tus cambios localmente.
+3. Abre un **Pull Request** describiendo qué cambia y por qué.
+
+Lee la **[guía de contribución](CONTRIBUTING.md)** para los detalles.
+
+> **Nota de seguridad:** la rama `main` está protegida y **cada Pull Request se revisa antes de
+> fusionarse** — ningún cambio entra sin revisión del mantenedor. No se aceptan PRs con secretos,
+> binarios sospechosos ni dependencias sin justificar.
+
+## Créditos
+
+Construido sobre software libre increíble: [Laravel](https://laravel.com),
+[Filament](https://filamentphp.com), [Tailwind CSS](https://tailwindcss.com),
+[Livewire](https://livewire.laravel.com), [Stripe](https://stripe.com) y
+[PayPal](https://developer.paypal.com).
+
+Creado y mantenido por [@celvintr](https://github.com/celvintr). Si te sirve, deja una ⭐ y
+ayúdanos a mejorarlo.
 
 ## Licencia
 

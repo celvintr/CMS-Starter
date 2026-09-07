@@ -40,6 +40,10 @@ instalación independiente que se genera en segundos.
 - Diseño propio con tipografía **Bricolage Grotesque + Inter**, íconos SVG, totalmente
   **responsive** y **theme-aware** al color de marca.
 
+### API / Headless
+- API REST de solo lectura para consumir el contenido desde **apps móviles, otros frontends
+  (Next.js, etc.) o integraciones**. Autenticación por **API keys** gestionadas desde el panel.
+
 ### Generación con IA
 - Conectas **tu propia API** (OpenRouter — que da acceso a OpenAI, Gemini, Claude… — u OpenAI)
   y describes lo que quieres: la IA **genera el módulo o la plantilla** y lo instala, listo para
@@ -128,6 +132,21 @@ administrador. Al terminar muestra la URL y las credenciales.
 6. **No se necesita Node en el servidor**: Tailwind ya está compilado y Filament trae sus assets.
 
 ---
+
+## API / Headless
+
+Genera una llave en **Ajustes → API keys** y consume el contenido con el header
+`Authorization: Bearer <token>` (o `X-API-Key: <token>`):
+
+```bash
+curl -H "Authorization: Bearer TU_TOKEN" https://tudominio.com/api/pages
+```
+
+Endpoints (solo lectura): `/api/settings`, `/api/pages`, `/api/pages/{slug}`,
+`/api/posts`, `/api/posts/{slug}`, `/api/modules`, `/api/modules/{slug}`,
+`/api/modules/{slug}/entries`, `/api/modules/{slug}/entries/{entry}`.
+
+Solo expone contenido publicado y ajustes públicos (nunca secretos). Rate-limit de 60 req/min.
 
 ## Pagos con Stripe
 

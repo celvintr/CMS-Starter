@@ -3,6 +3,8 @@
 namespace App\Filament\Pages;
 
 use App\Models\MailAccount;
+use App\Models\Module;
+use App\Models\Page as PageModel;
 use App\Models\SiteSetting;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -75,6 +77,43 @@ class AjustesSitio extends Page implements HasForms
                         Forms\Components\TextInput::make('email')->label('Correo')->email(),
                         Forms\Components\TextInput::make('address')->label('Dirección'),
                     ])->columns(2),
+
+                Forms\Components\Section::make('Menú de navegación')
+                    ->description('Arma tu menú. Si lo dejas vacío, se usa el automático (páginas + módulos + blog).')
+                    ->icon('heroicon-o-bars-3')
+                    ->schema([
+                        Forms\Components\Repeater::make('menu')
+                            ->label('')
+                            ->schema([
+                                Forms\Components\TextInput::make('label')->label('Texto')->required(),
+                                Forms\Components\Select::make('type')->label('Enlaza a')
+                                    ->options([
+                                        'page' => 'Página',
+                                        'module' => 'Módulo',
+                                        'blog' => 'Blog',
+                                        'home' => 'Inicio',
+                                        'custom' => 'Enlace personalizado',
+                                    ])->default('page')->required()->live()->native(false),
+                                Forms\Components\Select::make('page')->label('Página')
+                                    ->options(fn () => PageModel::pluck('title', 'slug')->all())
+                                    ->native(false)
+                                    ->visible(fn (Forms\Get $get) => $get('type') === 'page'),
+                                Forms\Components\Select::make('module')->label('Módulo')
+                                    ->options(fn () => Module::where('is_public', true)->pluck('name', 'slug')->all())
+                                    ->native(false)
+                                    ->visible(fn (Forms\Get $get) => $get('type') === 'module'),
+                                Forms\Components\TextInput::make('url')->label('URL')
+                                    ->placeholder('https://…')
+                                    ->visible(fn (Forms\Get $get) => $get('type') === 'custom'),
+                                Forms\Components\Toggle::make('new_tab')->label('Abrir en pestaña nueva')->inline(false),
+                            ])
+                            ->columns(2)
+                            ->reorderable()
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string => $state['label'] ?? 'Enlace')
+                            ->addActionLabel('Agregar enlace')
+                            ->defaultItems(0),
+                    ])->collapsed(),
 
                 Forms\Components\Section::make('Redes sociales')
                     ->schema([

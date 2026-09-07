@@ -15,7 +15,49 @@ class SiteSetting extends Model
         'stripe_enabled' => 'boolean',
         'paypal_secret' => 'encrypted',         // secreto de PayPal encriptado
         'paypal_enabled' => 'boolean',
+        'menu' => 'array',
     ];
+
+    /**
+     * Enlaces del menú de navegación. Usa el menú personalizado si existe;
+     * si no, arma uno automático con páginas + módulos públicos + blog.
+     *
+     * @return array<int, array{label:string,url:string,new_tab:bool}>
+     */
+    public function menuLinks(): array
+    {
+        $items = $this->menu ?? [];
+
+        if (! empty($items)) {
+            return collect($items)
+                ->filter(fn ($it) => ! empty($it['label']))
+                ->map(function ($it) {
+                    $url = match ($it['type'] ?? 'custom') {
+                        'home' => url('/'),
+                        'blog' => route('blog.index'),
+                        'page' => url('/' . ($it['page'] ?? '')),
+                        'module' => ! empty($it['module']) ? url('/m/' . $it['module']) : '#',
+                        default => $it['url'] ?? '#',
+                    };
+
+                    return ['label' => $it['label'], 'url' => $url, 'new_tab' => ! empty($it['new_tab'])];
+                })
+                ->values()
+                ->all();
+        }
+
+        // Fallback automático
+        $links = [];
+        foreach (Page::where('is_published', true)->where('show_in_menu', true)->orderBy('sort_order')->orderBy('title')->get() as $p) {
+            $links[] = ['label' => $p->title, 'url' => url('/' . $p->slug), 'new_tab' => false];
+        }
+        foreach (Module::where('is_public', true)->orderBy('sort_order')->orderBy('name')->get() as $m) {
+            $links[] = ['label' => $m->pluralLabel(), 'url' => url('/m/' . $m->slug), 'new_tab' => false];
+        }
+        $links[] = ['label' => 'Blog', 'url' => route('blog.index'), 'new_tab' => false];
+
+        return $links;
+    }
 
     /**
      * ¿Stripe está listo para cobrar? (activado y con secret key)

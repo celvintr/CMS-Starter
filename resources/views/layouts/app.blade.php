@@ -68,13 +68,9 @@
             </a>
 
             <nav class="hidden md:flex items-center gap-7">
-                @foreach ($menuPages as $mp)
-                    <a href="{{ url('/' . $mp->slug) }}" class="nav-link">{{ $mp->title }}</a>
+                @foreach ($settings->menuLinks() as $link)
+                    <a href="{{ $link['url'] }}" @if($link['new_tab']) target="_blank" rel="noopener" @endif class="nav-link">{{ $link['label'] }}</a>
                 @endforeach
-                @foreach (($menuModules ?? []) as $mod)
-                    <a href="{{ route('module.index', $mod->slug) }}" class="nav-link">{{ $mod->pluralLabel() }}</a>
-                @endforeach
-                <a href="{{ route('blog.index') }}" class="nav-link">Blog</a>
 
                 @php $hasShop = ($menuModules ?? collect())->contains(fn ($m) => $m->type === 'tienda'); $cartCount = collect(session('cart', []))->sum(); @endphp
                 @if ($hasShop)
@@ -101,13 +97,9 @@
         {{-- Panel móvil --}}
         <div id="m-nav" class="hidden md:hidden border-t border-slate-200/70 bg-[#fafaf9]">
             <nav class="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-1">
-                @foreach ($menuPages as $mp)
-                    <a href="{{ url('/' . $mp->slug) }}" class="py-2 nav-link">{{ $mp->title }}</a>
+                @foreach ($settings->menuLinks() as $link)
+                    <a href="{{ $link['url'] }}" @if($link['new_tab']) target="_blank" rel="noopener" @endif class="py-2 nav-link">{{ $link['label'] }}</a>
                 @endforeach
-                @foreach (($menuModules ?? []) as $mod)
-                    <a href="{{ route('module.index', $mod->slug) }}" class="py-2 nav-link">{{ $mod->pluralLabel() }}</a>
-                @endforeach
-                <a href="{{ route('blog.index') }}" class="py-2 nav-link">Blog</a>
                 @if (($menuModules ?? collect())->contains(fn ($m) => $m->type === 'tienda'))
                     <a href="{{ route('cart.index') }}" class="py-2 nav-link">Carrito</a>
                 @endif

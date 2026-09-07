@@ -32,6 +32,7 @@ instalación independiente que se genera en segundos.
 ### Gestión
 - **Dashboard con estadísticas**: resumen de páginas, módulos, registros y mensajes, gráfica
   de actividad y tabla de últimos mensajes.
+- **Biblioteca de medios**: sube imágenes una vez y reutilízalas en tu contenido copiando su URL.
 - **Roles y permisos**: Administrador (control total) y Editor (solo contenido).
 - **Ajustes del sitio**: nombre, logo, colores de marca, WhatsApp, redes y SEO — el sitio
   entero se re-tematiza con el color de marca.

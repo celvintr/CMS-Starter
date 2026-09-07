@@ -38,8 +38,10 @@ class AjustesSitio extends Page implements HasForms
     public function mount(): void
     {
         $attrs = SiteSetting::current()->attributesToArray();
-        // No exponer la llave de IA en el formulario (se guarda encriptada).
+        // No exponer secretos en el formulario (se guardan encriptados).
         $attrs['ai_api_key'] = '';
+        $attrs['stripe_secret_key'] = '';
+        $attrs['stripe_webhook_secret'] = '';
         $this->form->fill($attrs);
     }
 
@@ -104,6 +106,32 @@ class AjustesSitio extends Page implements HasForms
                             ->placeholder('openai/gpt-4o-mini')
                             ->helperText('Opcional. En OpenRouter, ej: openai/gpt-4o-mini, google/gemini-flash-1.5, anthropic/claude-3.5-sonnet.'),
                     ])->columns(2)->collapsed(),
+
+                Forms\Components\Section::make('Pagos (Stripe)')
+                    ->description('Cobra con tarjeta en la tienda mediante Stripe Checkout (seguro).')
+                    ->icon('heroicon-o-credit-card')
+                    ->schema([
+                        Forms\Components\Toggle::make('stripe_enabled')
+                            ->label('Activar pagos con tarjeta')
+                            ->helperText('El botón de pago aparece en el carrito solo si está activo y configurado.'),
+                        Forms\Components\TextInput::make('currency')
+                            ->label('Moneda')
+                            ->placeholder('usd')
+                            ->helperText('Código ISO de 3 letras, ej: usd, mxn, eur.')
+                            ->maxLength(3),
+                        Forms\Components\TextInput::make('stripe_public_key')
+                            ->label('Clave publicable (pk_...)'),
+                        Forms\Components\TextInput::make('stripe_secret_key')
+                            ->label('Clave secreta (sk_...)')
+                            ->password()->revealable()
+                            ->placeholder('•••••••• (se guarda encriptada)')
+                            ->helperText('Déjala vacía para no cambiar la existente.'),
+                        Forms\Components\TextInput::make('stripe_webhook_secret')
+                            ->label('Secreto del webhook (whsec_...)')
+                            ->password()->revealable()
+                            ->placeholder('•••••••• (se guarda encriptada)')
+                            ->helperText('Del endpoint /stripe/webhook en tu panel de Stripe.'),
+                    ])->columns(2)->collapsed(),
             ])
             ->statePath('data');
     }
@@ -112,9 +140,11 @@ class AjustesSitio extends Page implements HasForms
     {
         $data = $this->form->getState();
 
-        // Si no escribieron una llave nueva, conservar la existente.
-        if (empty($data['ai_api_key'])) {
-            unset($data['ai_api_key']);
+        // Si no escribieron un secreto nuevo, conservar el existente.
+        foreach (['ai_api_key', 'stripe_secret_key', 'stripe_webhook_secret'] as $secret) {
+            if (empty($data[$secret])) {
+                unset($data[$secret]);
+            }
         }
 
         SiteSetting::current()->update($data);

@@ -9,8 +9,19 @@ class SiteSetting extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'ai_api_key' => 'encrypted', // la llave de IA se guarda encriptada
+        'ai_api_key' => 'encrypted',            // la llave de IA se guarda encriptada
+        'stripe_secret_key' => 'encrypted',     // secretos de Stripe encriptados
+        'stripe_webhook_secret' => 'encrypted',
+        'stripe_enabled' => 'boolean',
     ];
+
+    /**
+     * ¿Stripe está listo para cobrar? (activado y con secret key)
+     */
+    public function stripeReady(): bool
+    {
+        return (bool) $this->stripe_enabled && ! empty($this->stripe_secret_key);
+    }
 
     /**
      * Devuelve (o crea) la única fila de configuración del sitio.

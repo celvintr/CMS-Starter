@@ -5,6 +5,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SubmissionController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,6 +33,12 @@ Route::post('/carrito/agregar/{entryId}', [CartController::class, 'add'])->name(
 Route::post('/carrito/actualizar', [CartController::class, 'update'])->name('cart.update');
 Route::post('/carrito/quitar/{entryId}', [CartController::class, 'remove'])->name('cart.remove');
 Route::post('/carrito/finalizar', [CartController::class, 'checkout'])->name('cart.checkout');
+
+// Pagos con Stripe (checkout hosteado).
+Route::post('/pago/checkout', [PaymentController::class, 'checkout'])->name('pago.checkout');
+Route::get('/pago/exito', [PaymentController::class, 'success'])->name('pago.exito');
+Route::get('/pago/cancelado', [PaymentController::class, 'cancel'])->name('pago.cancelado');
+Route::post('/stripe/webhook', [PaymentController::class, 'webhook'])->name('stripe.webhook');
 
 // Páginas dinámicas por slug — debe ir al final (captura cualquier ruta restante).
 Route::get('/{page:slug}', [PageController::class, 'show'])

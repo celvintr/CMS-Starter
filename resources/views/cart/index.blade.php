@@ -43,8 +43,32 @@
                 </div>
             </form>
 
+            @if ($settings->stripeReady())
+                <div class="mt-8 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                    <h2 class="text-lg font-bold mb-4" style="color: var(--brand-ink)">Pagar con tarjeta</h2>
+                    <form method="POST" action="{{ route('pago.checkout') }}" class="space-y-4">
+                        @csrf
+                        @if ($errors->any())
+                            <div class="rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2.5">{{ $errors->first() }}</div>
+                        @endif
+                        <div class="grid gap-4 md:grid-cols-2">
+                            <input type="text" name="nombre" placeholder="Tu nombre *" required value="{{ old('nombre') }}"
+                                   class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:ring-2 focus:ring-brand/40 focus:border-brand outline-none">
+                            <input type="email" name="email" placeholder="Tu correo *" required value="{{ old('email') }}"
+                                   class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:ring-2 focus:ring-brand/40 focus:border-brand outline-none">
+                        </div>
+                        <input type="text" name="telefono" placeholder="Teléfono (opcional)" value="{{ old('telefono') }}"
+                               class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:ring-2 focus:ring-brand/40 focus:border-brand outline-none">
+                        <button type="submit" class="btn-primary w-full">
+                            Pagar {{ number_format($total, 2) }} {{ strtoupper($settings->currency ?: 'USD') }}
+                        </button>
+                        <p class="text-xs text-slate-400 text-center">Pago seguro con Stripe. Serás redirigido para completar la compra.</p>
+                    </form>
+                </div>
+            @endif
+
             <div class="mt-8 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-                <h2 class="text-lg font-bold mb-4" style="color: var(--brand-ink)">Finalizar pedido</h2>
+                <h2 class="text-lg font-bold mb-4" style="color: var(--brand-ink)">{{ $settings->stripeReady() ? 'O finalizar por WhatsApp' : 'Finalizar pedido' }}</h2>
                 <form method="POST" action="{{ route('cart.checkout') }}" class="space-y-4">
                     @csrf
                     <div class="grid gap-4 md:grid-cols-2">

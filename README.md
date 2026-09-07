@@ -26,7 +26,8 @@ instalación independiente que se genera en segundos.
 
 ### Módulos con lógica ("plugins")
 - **Formularios** que capturan y almacenan envíos, visibles en el panel.
-- **Tienda** con carrito y **pedido por WhatsApp** (sin pasarela de pago, sin comisiones).
+- **Tienda** con carrito, **pago con tarjeta vía Stripe Checkout** (seguro, hosteado) y
+  registro de **órdenes** en el panel, o **pedido por WhatsApp** como alternativa.
 
 ### Gestión
 - **Dashboard con estadísticas**: resumen de páginas, módulos, registros y mensajes, gráfica
@@ -127,6 +128,17 @@ administrador. Al terminar muestra la URL y las credenciales.
 6. **No se necesita Node en el servidor**: Tailwind ya está compilado y Filament trae sus assets.
 
 ---
+
+## Pagos con Stripe
+
+1. Crea una cuenta en [stripe.com](https://stripe.com) y copia tus llaves (modo prueba: `pk_test_…` / `sk_test_…`).
+2. En el panel → **Ajustes del sitio → Pagos (Stripe)**: activa, pega las llaves y la moneda.
+3. En Stripe → Developers → Webhooks, agrega el endpoint `https://tudominio.com/stripe/webhook`
+   (evento `checkout.session.completed`) y pega el **secreto del webhook** (`whsec_…`) en Ajustes.
+4. El botón **"Pagar con tarjeta"** aparece en el carrito; las órdenes llegan a **Contenido → Órdenes**.
+
+Los datos de tarjeta se procesan en la página segura de Stripe (checkout hosteado): **nunca tocan
+tu servidor**. Los montos se calculan en el servidor y el pago se confirma por webhook firmado.
 
 ## Seguridad
 

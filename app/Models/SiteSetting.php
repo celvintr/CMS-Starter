@@ -8,6 +8,10 @@ class SiteSetting extends Model
 {
     protected $guarded = [];
 
+    protected $casts = [
+        'ai_api_key' => 'encrypted', // la llave de IA se guarda encriptada
+    ];
+
     /**
      * Devuelve (o crea) la única fila de configuración del sitio.
      */

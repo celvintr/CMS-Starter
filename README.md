@@ -39,6 +39,12 @@ instalación independiente que se genera en segundos.
 - Diseño propio con tipografía **Bricolage Grotesque + Inter**, íconos SVG, totalmente
   **responsive** y **theme-aware** al color de marca.
 
+### Generación con IA
+- Conectas **tu propia API** (OpenRouter — que da acceso a OpenAI, Gemini, Claude… — u OpenAI)
+  y describes lo que quieres: la IA **genera el módulo o la plantilla** y lo instala, listo para
+  editar. La llave se guarda **encriptada** y la respuesta se **valida y sanea** antes de crear
+  nada.
+
 ### Packs (ecosistema)
 - **Biblioteca de packs**: módulos y plantillas curados (Tienda, Servicios, Equipo,
   Testimonios, FAQ, Propiedades, Citas, Restaurante, Clínica, Inmobiliaria) que se **instalan

@@ -37,7 +37,10 @@ class AjustesSitio extends Page implements HasForms
 
     public function mount(): void
     {
-        $this->form->fill(SiteSetting::current()->attributesToArray());
+        $attrs = SiteSetting::current()->attributesToArray();
+        // No exponer la llave de IA en el formulario (se guarda encriptada).
+        $attrs['ai_api_key'] = '';
+        $this->form->fill($attrs);
     }
 
     public function form(Form $form): Form
@@ -82,6 +85,25 @@ class AjustesSitio extends Page implements HasForms
                         Forms\Components\Textarea::make('meta_description')->label('Descripción SEO por defecto')->rows(2),
                         Forms\Components\Textarea::make('footer_text')->label('Texto del pie de página')->rows(2),
                     ])->collapsed(),
+
+                Forms\Components\Section::make('Inteligencia artificial')
+                    ->description('Conecta tu propia API para generar módulos y plantillas con IA.')
+                    ->icon('heroicon-o-sparkles')
+                    ->schema([
+                        Forms\Components\Select::make('ai_provider')->label('Proveedor')
+                            ->options([
+                                'openrouter' => 'OpenRouter (recomendado: da acceso a OpenAI, Gemini, Claude…)',
+                                'openai' => 'OpenAI',
+                            ])
+                            ->default('openrouter')->native(false),
+                        Forms\Components\TextInput::make('ai_api_key')->label('API key')
+                            ->password()->revealable()
+                            ->placeholder('•••••••• (se guarda encriptada)')
+                            ->helperText('Déjala vacía para no cambiar la que ya tienes.'),
+                        Forms\Components\TextInput::make('ai_model')->label('Modelo')
+                            ->placeholder('openai/gpt-4o-mini')
+                            ->helperText('Opcional. En OpenRouter, ej: openai/gpt-4o-mini, google/gemini-flash-1.5, anthropic/claude-3.5-sonnet.'),
+                    ])->columns(2)->collapsed(),
             ])
             ->statePath('data');
     }
@@ -89,6 +111,11 @@ class AjustesSitio extends Page implements HasForms
     public function save(): void
     {
         $data = $this->form->getState();
+
+        // Si no escribieron una llave nueva, conservar la existente.
+        if (empty($data['ai_api_key'])) {
+            unset($data['ai_api_key']);
+        }
 
         SiteSetting::current()->update($data);
 

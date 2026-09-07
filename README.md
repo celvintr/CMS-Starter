@@ -1,0 +1,112 @@
+# CMS Starter — Laravel 12 + Filament
+
+Un **CMS a medida, sin límites de plantilla**, pensado para agencias y freelancers que
+construyen muchos sitios administrables. En lugar de instalar plugins, **creas tus propios
+módulos de contenido desde el panel** (como los Custom Post Types de WordPress, pero de
+verdad no-code), los colocas en cualquier página y los publicas. Cada cliente es una
+instalación independiente que se genera en segundos.
+
+<p align="center">
+  <img src="screenshots/home.png" alt="Página de inicio" width="820">
+</p>
+
+---
+
+## Características
+
+### Motor de contenido no-code
+- **Módulos dinámicos**: creas tipos de contenido (Productos, Propiedades, Doctores, Cursos…)
+  desde el panel, defines sus campos y el CRUD se genera solo. Aparecen automáticamente en el
+  menú del administrador.
+- **11 tipos de campo**: texto, texto largo, editor con formato, correo, número/precio, sí/no,
+  fecha, lista de opciones, imagen y galería.
+- **Constructor de páginas por bloques**: Hero, servicios, galería, imagen+texto, CTA,
+  formulario, listado de módulo y más — se arrastran y ordenan.
+- **Plantillas de página** listas para usar (landing, negocio local, tienda, "nosotros").
+
+### Módulos con lógica ("plugins")
+- **Formularios** que capturan y almacenan envíos, visibles en el panel.
+- **Tienda** con carrito y **pedido por WhatsApp** (sin pasarela de pago, sin comisiones).
+
+### Gestión
+- **Roles y permisos**: Administrador (control total) y Editor (solo contenido).
+- **Ajustes del sitio**: nombre, logo, colores de marca, WhatsApp, redes y SEO — el sitio
+  entero se re-tematiza con el color de marca.
+
+### Frontend
+- Diseño propio con tipografía **Bricolage Grotesque + Inter**, íconos SVG, totalmente
+  **responsive** y **theme-aware** al color de marca.
+
+### Multi-cliente
+- Script `nuevo-cliente.ps1` que **clona y configura** un sitio nuevo (base de datos, admin,
+  contenido base) en segundos.
+
+---
+
+## Capturas
+
+| Escritorio | Móvil | Desde plantilla |
+|---|---|---|
+| ![Home](screenshots/home.png) | ![Móvil](screenshots/home-mobile.png) | ![Plantilla](screenshots/template.png) |
+
+---
+
+## Stack
+
+- **Laravel 12** (PHP 8.2+)
+- **Filament 3** (panel de administración)
+- **Blade + Tailwind CSS** (frontend)
+- **MySQL** (producción) / **SQLite** (desarrollo)
+
+---
+
+## Instalación
+
+```bash
+git clone <este-repo> cms-starter
+cd cms-starter
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed --seeder=Database\\Seeders\\DemoContentSeeder
+php artisan storage:link
+php artisan serve
+```
+
+- Sitio: `http://localhost:8000`
+- Panel: `http://localhost:8000/admin`
+
+Crea tu usuario administrador:
+
+```bash
+php artisan make:filament-user
+```
+
+> El seeder incluye un usuario editor de prueba: `editor@demo.com` / `editor123`.
+
+---
+
+## Un sitio nuevo por cliente (Windows / Laragon)
+
+```powershell
+.\nuevo-cliente.ps1 -Slug "farmacia-lopez" -Nombre "Farmacia Lopez" -Email "admin@farmacia.com"
+```
+
+Copia el proyecto, genera la base de datos con contenido base, enlaza storage y crea el
+administrador. Al terminar muestra la URL y las credenciales.
+
+---
+
+## Despliegue en hosting compartido (cPanel)
+
+1. PHP 8.2+ en el selector de versión de PHP.
+2. Base de datos MySQL y credenciales en `.env`.
+3. Apunta el dominio a la carpeta `/public`.
+4. `php artisan migrate --force && php artisan storage:link && php artisan config:cache`.
+5. Filament trae sus assets compilados: **no requiere Node en el servidor**.
+
+---
+
+## Licencia
+
+[MIT](LICENSE) — libre para usar, modificar y distribuir.

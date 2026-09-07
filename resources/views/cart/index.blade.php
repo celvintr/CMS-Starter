@@ -1,0 +1,66 @@
+@extends('layouts.app')
+
+@section('title', 'Carrito — ' . $settings->site_name)
+
+@section('content')
+    <section class="max-w-4xl mx-auto px-4 py-14">
+        <h1 class="text-4xl font-extrabold mb-8" style="color: var(--brand-ink)">Tu carrito</h1>
+
+        @if (empty($items))
+            <div class="rounded-2xl border border-slate-100 bg-white p-10 text-center text-slate-400">
+                Tu carrito está vacío.
+                <div class="mt-4">
+                    <a href="{{ route('home') }}" class="text-brand font-semibold hover:underline">Seguir viendo productos</a>
+                </div>
+            </div>
+        @else
+            <form method="POST" action="{{ route('cart.update') }}">
+                @csrf
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y">
+                    @foreach ($items as $it)
+                        <div class="flex items-center gap-4 p-4">
+                            @if ($it['img'])
+                                <img src="{{ asset('storage/' . $it['img']) }}" alt="" class="h-16 w-16 rounded-lg object-cover">
+                            @else
+                                <div class="h-16 w-16 rounded-lg bg-slate-100"></div>
+                            @endif
+                            <div class="flex-1">
+                                <div class="font-semibold" style="color: var(--brand-ink)">{{ $it['title'] }}</div>
+                                <div class="text-sm text-slate-500">{{ number_format($it['price'], 2) }} c/u</div>
+                            </div>
+                            <input type="number" name="qty[{{ $it['id'] }}]" value="{{ $it['qty'] }}" min="1"
+                                   class="w-20 rounded-lg border border-slate-300 px-2 py-1 text-center">
+                            <div class="w-24 text-right font-bold" style="color: var(--brand-ink)">{{ number_format($it['subtotal'], 2) }}</div>
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="flex items-center justify-between mt-4">
+                    <button type="submit" class="text-sm text-slate-500 hover:text-brand">Actualizar cantidades</button>
+                    <div class="text-2xl font-extrabold" style="color: var(--brand-ink)">
+                        Total: {{ number_format($total, 2) }}
+                    </div>
+                </div>
+            </form>
+
+            <div class="mt-8 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <h2 class="text-lg font-bold mb-4" style="color: var(--brand-ink)">Finalizar pedido</h2>
+                <form method="POST" action="{{ route('cart.checkout') }}" class="space-y-4">
+                    @csrf
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <input type="text" name="nombre" placeholder="Tu nombre"
+                               class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand focus:border-brand outline-none">
+                        <input type="text" name="nota" placeholder="Nota (opcional)"
+                               class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand focus:border-brand outline-none">
+                    </div>
+                    <button type="submit"
+                            class="w-full py-3 rounded-lg bg-green-500 text-white font-semibold hover:bg-green-600 transition flex items-center justify-center gap-2">
+                        <svg viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.599 5.336l-.999 3.648 3.9-1.283z"/></svg>
+                        Enviar pedido por WhatsApp
+                    </button>
+                    <p class="text-xs text-slate-400 text-center">Se abrirá WhatsApp con el detalle de tu pedido listo para enviar.</p>
+                </form>
+            </div>
+        @endif
+    </section>
+@endsection

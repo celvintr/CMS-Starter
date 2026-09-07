@@ -17,6 +17,9 @@ Route::get('/', [PageController::class, 'home'])->name('home');
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap']);
 Route::get('/robots.txt', [SeoController::class, 'robots']);
 
+// Búsqueda
+Route::get('/buscar', [\App\Http\Controllers\SearchController::class, 'index'])->name('search');
+
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{post:slug}', [BlogController::class, 'show'])->name('blog.show');
 

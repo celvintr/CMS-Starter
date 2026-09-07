@@ -72,6 +72,10 @@
                     <a href="{{ $link['url'] }}" @if($link['new_tab']) target="_blank" rel="noopener" @endif class="nav-link">{{ $link['label'] }}</a>
                 @endforeach
 
+                <a href="{{ route('search') }}" class="text-slate-600 hover:text-brand transition-colors" aria-label="Buscar">
+                    <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m21 21-4.3-4.3"/></svg>
+                </a>
+
                 @php $hasShop = ($menuModules ?? collect())->contains(fn ($m) => $m->type === 'tienda'); $cartCount = collect(session('cart', []))->sum(); @endphp
                 @if ($hasShop)
                     <a href="{{ route('cart.index') }}" class="relative inline-flex items-center text-slate-600 hover:text-brand transition-colors">

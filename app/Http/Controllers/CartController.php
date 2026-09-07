@@ -16,7 +16,23 @@ class CartController extends Controller
         $qty = max(1, (int) $request->input('qty', 1));
 
         $cart = session('cart', []);
-        $cart[$entry->id] = ($cart[$entry->id] ?? 0) + $qty;
+        $current = (int) ($cart[$entry->id] ?? 0);
+        $desired = $current + $qty;
+
+        // Respeta el stock cuando el producto lo controla.
+        if ($entry->tracksStock()) {
+            if ((int) $entry->stock <= 0) {
+                return back()->with('sent', 'Este producto está agotado.');
+            }
+
+            $desired = min($desired, (int) $entry->stock);
+
+            if ($desired <= $current) {
+                return back()->with('sent', 'No hay más unidades disponibles de este producto.');
+            }
+        }
+
+        $cart[$entry->id] = $desired;
         session(['cart' => $cart]);
 
         return back()->with('sent', 'Producto agregado al carrito.');
@@ -69,11 +85,20 @@ class CartController extends Controller
 
     public function update(Request $request)
     {
+        $requested = collect((array) $request->input('qty', []))
+            ->mapWithKeys(fn ($qty, $id) => [(int) $id => (int) $qty])
+            ->filter(fn ($qty) => $qty > 0);
+
+        // Capamos cada cantidad al stock disponible del producto.
+        $entries = Entry::whereIn('id', $requested->keys())->get()->keyBy('id');
+
         $cart = [];
-        foreach ((array) $request->input('qty', []) as $id => $qty) {
-            $qty = (int) $qty;
+        foreach ($requested as $id => $qty) {
+            $entry = $entries->get($id);
+            $qty = $entry ? max($entry->clampQuantity($qty), 0) : $qty;
+
             if ($qty > 0) {
-                $cart[(int) $id] = $qty;
+                $cart[$id] = $qty;
             }
         }
         session(['cart' => $cart]);

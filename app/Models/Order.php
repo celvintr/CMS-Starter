@@ -23,4 +23,26 @@ class Order extends Model
     {
         return $this->status === 'paid';
     }
+
+    /**
+     * Descuenta del inventario las unidades de esta orden (solo productos con
+     * control de stock). Se llama una vez al confirmarse el pago.
+     */
+    public function reduceStock(): void
+    {
+        foreach ((array) $this->items as $item) {
+            $id = $item['id'] ?? null;
+            $qty = (int) ($item['qty'] ?? 0);
+
+            if (! $id || $qty <= 0) {
+                continue;
+            }
+
+            $entry = Entry::find($id);
+
+            if ($entry && $entry->tracksStock()) {
+                $entry->update(['stock' => max(0, (int) $entry->stock - $qty)]);
+            }
+        }
+    }
 }

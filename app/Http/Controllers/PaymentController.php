@@ -154,6 +154,7 @@ class PaymentController extends Controller
                 ]);
 
                 Coupon::redeem($order->coupon_code);
+                $order->reduceStock();
                 Notifier::order($order);
             }
         }

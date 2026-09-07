@@ -10,14 +10,24 @@
         <h1 class="mt-3 text-4xl font-extrabold" style="color: var(--brand-ink)">{{ $entry->title }}</h1>
 
         @if ($module->type === 'tienda')
-            <form method="POST" action="{{ route('cart.add', $entry->id) }}" class="mt-6 flex items-center gap-3">
-                @csrf
-                <input type="number" name="qty" value="1" min="1"
-                       class="w-20 rounded-lg border border-slate-300 px-2 py-2 text-center">
-                <button type="submit" class="px-6 py-2.5 rounded-lg text-white font-semibold hover:opacity-90 transition" style="background: var(--brand)">
-                    Agregar al carrito
-                </button>
-            </form>
+            @php $soldOut = $entry->tracksStock() && (int) $entry->stock <= 0; @endphp
+            @if ($soldOut)
+                <div class="mt-6">
+                    <span class="inline-block px-6 py-2.5 rounded-lg bg-slate-100 text-slate-400 font-semibold">Agotado</span>
+                </div>
+            @else
+                <form method="POST" action="{{ route('cart.add', $entry->id) }}" class="mt-6 flex items-center gap-3 flex-wrap">
+                    @csrf
+                    <input type="number" name="qty" value="1" min="1" @if ($entry->tracksStock()) max="{{ $entry->stock }}" @endif
+                           class="w-20 rounded-lg border border-slate-300 px-2 py-2 text-center">
+                    <button type="submit" class="px-6 py-2.5 rounded-lg text-white font-semibold hover:opacity-90 transition" style="background: var(--brand)">
+                        Agregar al carrito
+                    </button>
+                    @if ($entry->tracksStock() && (int) $entry->stock <= 5)
+                        <span class="text-sm text-amber-600 font-medium">Solo quedan {{ $entry->stock }}</span>
+                    @endif
+                </form>
+            @endif
         @endif
 
         <div class="mt-8 space-y-8">

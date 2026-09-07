@@ -40,12 +40,7 @@
                             </div>
                         </a>
                         @if ($module->type === 'tienda')
-                            <form method="POST" action="{{ route('cart.add', $entry->id) }}" class="px-6 pb-6 mt-auto">
-                                @csrf
-                                <button type="submit" class="w-full py-2.5 rounded-xl bg-brand text-white font-semibold text-sm hover:opacity-90 transition">
-                                    Agregar al carrito
-                                </button>
-                            </form>
+                            @include('partials.add-to-cart', ['entry' => $entry])
                         @endif
                     </div>
                 @endforeach

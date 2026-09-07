@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\EntryResource\Pages;
 use App\Models\Entry;
 use App\Models\Module;
+use App\Support\Features;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Navigation\NavigationItem;
@@ -84,7 +85,7 @@ class EntryResource extends Resource
                         }),
                 ], $fieldComponents))->columnSpan(2),
 
-                Forms\Components\Group::make([
+                Forms\Components\Group::make(array_merge([
                     Forms\Components\Section::make('Publicación')->schema([
                         Forms\Components\Toggle::make('is_published')->label('Publicado')
                             ->helperText('Apágalo para borrador.')->default(true),
@@ -94,7 +95,16 @@ class EntryResource extends Resource
                         Forms\Components\TextInput::make('slug')->label('Slug (URL)'),
                         Forms\Components\TextInput::make('sort_order')->label('Orden')->numeric()->default(0),
                     ]),
-                ])->columnSpan(1),
+                ], ($module && $module->type === 'tienda' && Features::enabled('tienda')) ? [
+                    Forms\Components\Section::make('Inventario')
+                        ->icon('heroicon-o-cube')
+                        ->schema([
+                            Forms\Components\TextInput::make('stock')
+                                ->label('Stock disponible')
+                                ->numeric()->minValue(0)
+                                ->helperText('Vacío = sin control (ilimitado). 0 = agotado. Se descuenta solo al confirmarse un pago en línea.'),
+                        ]),
+                ] : []))->columnSpan(1),
             ]),
         ]);
     }
@@ -167,6 +177,12 @@ class EntryResource extends Resource
                     $columns[] = $column;
                 }
             }
+        }
+
+        if ($module && $module->type === 'tienda' && Features::enabled('tienda')) {
+            $columns[] = Tables\Columns\TextColumn::make('stock')->label('Stock')->badge()
+                ->formatStateUsing(fn ($state) => $state === null ? '∞' : (string) $state)
+                ->color(fn ($state) => $state === null ? 'gray' : ((int) $state <= 0 ? 'danger' : 'success'));
         }
 
         $columns[] = Tables\Columns\IconColumn::make('is_published')->label('Publicado')->boolean();

@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  tests:
+    name: Pruebas
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo, sqlite, pdo_sqlite, bcmath, intl
+          coverage: none
+
+      - name: Preparar entorno
+        run: cp .env.example .env
+
+      - name: Cache de Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache/files
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Instalar dependencias
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Generar APP_KEY
+        run: php artisan key:generate
+
+      - name: Ejecutar la suite de pruebas
+        run: php artisan test

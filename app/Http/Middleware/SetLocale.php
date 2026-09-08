@@ -26,8 +26,8 @@ class SetLocale
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // Reinicia el formateador por si quedó activo de una petición previa
-        // (relevante en entornos persistentes como Octane).
+        // Estado limpio por si un formateador quedó activo de una petición previa
+        // (entornos persistentes como Octane, o la capa de tests en el mismo proceso).
         URL::formatPathUsing(fn (string $p): string => $p);
 
         $settings = SiteSetting::current();
@@ -52,18 +52,22 @@ class SetLocale
             URL::formatPathUsing(fn (string $p): string => $p === '/' ? '/'.$first : '/'.$first.$p);
 
             // Reescribir la petición sin el prefijo para que el router la resuelva.
-            $request->server->set('REQUEST_URI', $rest.($query ? '?'.$query : ''));
-            $request->initialize(
-                $request->query->all(),
-                $request->request->all(),
-                $request->attributes->all(),
-                $request->cookies->all(),
-                $request->files->all(),
+            // duplicate() con un nuevo REQUEST_URI reinicia las cachés de path de Symfony
+            // (más robusto que initialize(), también bajo la capa de tests).
+            $duplicate = $request->duplicate(null, null, null, null, null, array_merge(
                 $request->server->all(),
-                $request->getContent(),
-            );
+                ['REQUEST_URI' => $rest.($query ? '?'.$query : '')],
+            ));
+            $duplicate->setUserResolver($request->getUserResolver());
+            app()->instance('request', $duplicate);
 
-            return $next($request);
+            $response = $next($duplicate);
+
+            // La respuesta (y sus vistas) ya se generaron con el prefijo; limpiamos el
+            // formateador para no filtrarlo a la siguiente petición del mismo proceso.
+            URL::formatPathUsing(fn (string $p): string => $p);
+
+            return $response;
         }
 
         app()->setLocale($default);

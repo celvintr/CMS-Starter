@@ -5,12 +5,14 @@
 ![Laravel](https://img.shields.io/badge/Laravel-12-ff2d20)
 ![Filament](https://img.shields.io/badge/Filament-3-fdae4b)
 ![Tailwind](https://img.shields.io/badge/Tailwind-4-38bdf8)
+![CI](https://github.com/celvintr/CMS-Starter/actions/workflows/ci.yml/badge.svg)
 
 Un **CMS a medida, sin límites de plantilla**, pensado para agencias y freelancers que
 construyen muchos sitios administrables. En lugar de instalar plugins, **creas tus propios
 módulos de contenido desde el panel** (como los Custom Post Types de WordPress, pero de
-verdad no-code), los colocas en cualquier página y los publicas. Cada cliente es una
-instalación independiente que se genera en segundos.
+verdad no-code) y **activas solo las funciones que cada cliente necesita** (tienda,
+multilenguaje, newsletter, reservas…). Cada cliente es una instalación independiente que se
+genera en segundos.
 
 <p align="center">
   <img src="screenshots/home.png" alt="Página de inicio" width="820">
@@ -21,18 +23,20 @@ instalación independiente que se genera en segundos.
 ## Contenido
 
 - [Características](#características)
+- [Módulos vs. Funciones](#módulos-vs-funciones)
 - [Capturas](#capturas)
 - [Stack](#stack)
 - [Requisitos](#requisitos)
 - [Instalación](#instalación)
 - [Un sitio nuevo por cliente](#un-sitio-nuevo-por-cliente-windows--laragon)
 - [Despliegue en cPanel](#despliegue-en-hosting-compartido-cpanel)
+- [Configuración (panel)](#configuración-desde-el-panel)
 - [API / Headless](#api--headless)
-- [Pagos con Stripe](#pagos-con-stripe) · [PayPal](#pagos-con-paypal)
-- [Seguridad](#seguridad)
+- [Pagos: Stripe](#pagos-con-stripe) · [PayPal](#pagos-con-paypal)
+- [Seguridad y 2FA](#seguridad)
+- [Pruebas y CI](#pruebas-y-ci)
 - [Contribuir](#contribuir)
-- [Créditos](#créditos)
-- [Licencia](#licencia)
+- [Créditos](#créditos) · [Licencia](#licencia)
 
 ---
 
@@ -45,54 +49,99 @@ instalación independiente que se genera en segundos.
 - **Tipos de campo**: texto, texto largo, editor con formato, correo, número/precio, sí/no,
   fecha, lista de opciones, imagen, galería y **relación a otro módulo** (CMS relacional).
 - **Constructor de páginas por bloques**: Hero, servicios, galería, imagen+texto, CTA,
-  formulario, listado de módulo y más — se arrastran y ordenan.
+  testimonios, precios, FAQ, mapa, video, estadísticas, formulario, listado de módulo y más.
 - **Plantillas de página** listas para usar (landing, negocio local, tienda, "nosotros").
 
-### Módulos con lógica ("plugins")
-- **Formularios** que capturan y almacenan envíos, visibles en el panel.
-- **Tienda** con carrito, **pagos con Stripe y PayPal** (checkout seguro y hosteado) y
-  registro de **órdenes** en el panel, o **pedido por WhatsApp** como alternativa.
+### Funciones del sitio (extensiones activables)
+Cada capacidad con lógica propia se **prende o apaga** desde **Sistema → Funciones del sitio**.
+Al activarse desbloquea su interfaz en el panel y sus bloques en el sitio:
 
-### Gestión
-- **Dashboard con estadísticas**: resumen de páginas, módulos, registros y mensajes, gráfica
-  de actividad y tabla de últimos mensajes.
-- **Biblioteca de medios**: sube imágenes una vez y reutilízalas en tu contenido copiando su URL.
-- **Correo (SMTP)**: configura **varias cuentas** de correo y decide por cuál avisar de mensajes
-  de formularios y de órdenes pagadas (Stripe/PayPal). Contraseñas encriptadas y botón de prueba.
-- **Roles y permisos**: Administrador (control total) y Editor (solo contenido).
-- **Ajustes del sitio**: nombre, logo, colores de marca, WhatsApp, redes y SEO — el sitio
-  entero se re-tematiza con el color de marca.
+| Función | Qué desbloquea |
+|---|---|
+| **Tienda** | Carrito, pagos, cupones, inventario, variantes, envíos y órdenes |
+| **Multilenguaje** | Sitio en varios idiomas con URL por idioma y traducción de contenido |
+| **Newsletter** | Captura de suscriptores y campañas por correo |
+| **Reservas / Citas** | Agenda con horarios reales y aviso por correo |
+| **Generador con IA** | Crea módulos y plantillas desde un prompt |
 
-### Frontend
-- Diseño propio con tipografía **Bricolage Grotesque + Inter**, íconos SVG, totalmente
-  **responsive** y **theme-aware** al color de marca.
+### Tienda (e-commerce)
+- **Carrito** y **checkout** con **Stripe** y **PayPal** (hosteado y seguro), o **pedido por
+  WhatsApp** como alternativa sin comisiones.
+- **Cupones** de descuento (porcentaje o monto fijo) con vencimiento, compra mínima, límite de
+  usos y **alcance por tienda** o globales.
+- **Inventario (stock)** por producto, con aviso "Agotado" / "Solo quedan N" y descuento
+  automático al confirmarse el pago.
+- **Variantes** por producto (talla, color, plan…), cada una con su **precio y stock**.
+- **Envíos**: tarifa plana con **envío gratis desde un umbral**, dirección en el checkout.
+- **Estados de pedido**: pendiente → pagada → **enviada** → **entregada**, con aviso al cliente
+  por correo en cada paso. Todas las órdenes quedan registradas en el panel.
 
-### SEO
-- **`sitemap.xml`** y **`robots.txt`** automáticos, **Open Graph + Twitter Cards** (para que se
-  vea bien al compartir en redes y WhatsApp), **canonical** y **datos estructurados JSON-LD**
-  (Organización + Artículo en el blog).
+### Multilenguaje
+- URLs por idioma (**el idioma por defecto en la raíz** y `/en`, `/fr`… para el resto).
+- Traduce **páginas, blog y ajustes** desde el panel; **selector de idioma**, `hreflang` y
+  `canonical` por idioma para SEO.
 
-### API / Headless
-- API REST de solo lectura para consumir el contenido desde **apps móviles, otros frontends
-  (Next.js, etc.) o integraciones**. Autenticación por **API keys** gestionadas desde el panel.
+### Newsletter
+- Formulario de **suscripción** (bloque para páginas) con anti-spam, listado de **suscriptores**
+  (con exportación CSV) y **campañas** que se envían por tus cuentas SMTP. Baja mediante enlace
+  **firmado** por destinatario.
+
+### Reservas / Citas
+- Bloque de **reserva** con **horarios reales**: configuras días, apertura, cierre, duración del
+  turno y cupos. El sitio ofrece solo los **horarios disponibles** y valida en el servidor para
+  **evitar dobles reservas**. Agenda gestionable en el panel con aviso por correo al confirmar.
 
 ### Generación con IA
-- Conectas **tu propia API** (OpenRouter — que da acceso a OpenAI, Gemini, Claude… — u OpenAI)
-  y describes lo que quieres: la IA **genera el módulo o la plantilla** y lo instala, listo para
-  editar. La llave se guarda **encriptada** y la respuesta se **valida y sanea** antes de crear
-  nada.
+- Conectas **tu propia API** (OpenRouter — OpenAI, Gemini, Claude… — u OpenAI) y describes lo que
+  quieres: la IA **genera el módulo o la plantilla** y lo instala. La llave se guarda
+  **encriptada** y la respuesta se **valida y sanea** antes de crear nada.
+
+### Gestión
+- **Dashboard vivo**: tarjetas que aparecen según las funciones activas (ventas del mes, órdenes
+  pendientes, reservas próximas, suscriptores, mensajes) más tablas de órdenes recientes y
+  próximas reservas.
+- **Asistente de primeros pasos**: checklist que guía al clonar un sitio nuevo y desaparece al
+  completarse.
+- **Biblioteca de medios**, **perfil de usuario** (nombre/correo/contraseña) y **cuentas SMTP**
+  múltiples con contraseñas encriptadas y botón de prueba.
+- **Roles**: Administrador (control total) y Editor (solo contenido).
+- **Marca del cliente**: el sitio **y el panel** toman el nombre, logo, **favicon** y color de
+  marca desde Ajustes.
+
+### Frontend, SEO y analítica
+- Diseño propio (**Bricolage Grotesque + Inter**, íconos SVG), **responsive** y re-tematizado al
+  color de marca.
+- `sitemap.xml` y `robots.txt` automáticos, **Open Graph + Twitter Cards**, `canonical` y
+  **JSON-LD** (Organización + Artículo).
+- **Analítica**: pega tus scripts de **GA4 / Meta Pixel / TikTok** y un **banner de cookies**
+  opcional que **difiere el seguimiento hasta que el visitante acepta** (consentimiento).
+
+### API / Headless
+- API REST de solo lectura para apps móviles u otros frontends (Next.js, etc.), con
+  autenticación por **API keys** gestionadas desde el panel.
 
 ### Packs (ecosistema)
-- **Biblioteca de packs**: módulos y plantillas curados (Tienda, Servicios, Equipo,
-  Testimonios, FAQ, Propiedades, Citas, Restaurante, Clínica, Inmobiliaria) que se **instalan
-  de un clic** desde el panel.
-- **Exporta e importa** cualquier módulo o plantilla como archivo `.json` portable. Deja packs
-  en `resources/packs/` y aparecen en la biblioteca — así cualquiera puede ampliarla y
-  compartir sin tocar código.
+- **Biblioteca de packs** de módulos y plantillas curados, instalables de un clic, y
+  **exportación/importación** en `.json` portable (deja archivos en `resources/packs/`).
 
 ### Multi-cliente
 - Script `nuevo-cliente.ps1` que **clona y configura** un sitio nuevo (base de datos, admin,
   contenido base) en segundos.
+
+---
+
+## Módulos vs. Funciones
+
+Es la idea central del CMS y conviene tenerla clara:
+
+- **Módulo = un TIPO DE CONTENIDO** que creas sin código (Productos, Servicios…). Define *qué*
+  contenido maneja el sitio; puedes crear los que quieras.
+- **Función = una CAPACIDAD con lógica** que se activa con un switch (Tienda, Multilenguaje…).
+  Define *qué sabe hacer* el sitio.
+
+Se conectan por el **tipo** del módulo: un módulo de tipo *tienda* es tu catálogo, y la **función
+Tienda** es la que le da carrito, pagos, cupones e inventario. Otras funciones (Newsletter,
+Reservas) son independientes y traen su propio contenido.
 
 ---
 
@@ -106,18 +155,17 @@ instalación independiente que se genera en segundos.
 
 ## Stack
 
-- **Laravel 12** (PHP 8.2+)
-- **Filament 3** (panel de administración)
-- **Blade + Tailwind CSS 4** (frontend)
+- **Laravel 12** (PHP 8.2+) · **Filament 3** (panel)
+- **Blade + Tailwind CSS 4** (frontend, compilado con **Vite**)
 - **MySQL** (producción) / **SQLite** (desarrollo)
-- **Stripe** y **PayPal** (pagos), **Vite** (build)
+- **Stripe** y **PayPal** (pagos) · **PHPUnit** + **GitHub Actions** (pruebas/CI)
 
 ---
 
 ## Requisitos
 
 - **PHP 8.2 o superior** con extensiones: `mbstring`, `openssl`, `pdo`, `fileinfo`, `curl`,
-  `gd`, `intl`, `zip` (y `pdo_sqlite` para desarrollo o `pdo_mysql` para producción).
+  `gd`, `intl`, `bcmath`, `zip` (y `pdo_sqlite` para desarrollo o `pdo_mysql` para producción).
 - **Composer 2**
 - **Node.js 18+** y **npm** (solo para compilar los assets; no se necesita en el servidor)
 - **MySQL 8** (producción) o **SQLite** (desarrollo)
@@ -176,6 +224,21 @@ administrador. Al terminar muestra la URL y las credenciales.
 
 ---
 
+## Configuración (desde el panel)
+
+Casi todo se maneja en **Ajustes del sitio** y en **Sistema → Funciones del sitio**:
+
+- **Funciones del sitio** — activa/desactiva Tienda, Multilenguaje, Newsletter, Reservas e IA.
+- **Identidad** — nombre, logo, **favicon**, colores de marca (re-tematiza sitio y panel).
+- **Pagos** — Stripe y PayPal (ver abajo). **Envíos** — tarifa y envío gratis desde un umbral.
+- **Idiomas y traducciones** — idioma por defecto e idiomas disponibles.
+- **Analítica y cookies** — scripts de GA4/Meta/TikTok y banner de consentimiento.
+- **Horarios de reservas** — días, apertura, cierre, duración del turno y cupos.
+- **Notificaciones por correo** — cuentas SMTP y a quién avisar de formularios y órdenes.
+- **SEO y pie de página**, **menú de navegación**, **redes sociales**.
+
+---
+
 ## API / Headless
 
 Genera una llave en **Ajustes → API keys** y consume el contenido con el header
@@ -197,10 +260,11 @@ Solo expone contenido publicado y ajustes públicos (nunca secretos). Rate-limit
 2. En el panel → **Ajustes del sitio → Pagos (Stripe)**: activa, pega las llaves y la moneda.
 3. En Stripe → Developers → Webhooks, agrega el endpoint `https://tudominio.com/stripe/webhook`
    (evento `checkout.session.completed`) y pega el **secreto del webhook** (`whsec_…`) en Ajustes.
-4. El botón **"Pagar con tarjeta"** aparece en el carrito; las órdenes llegan a **Contenido → Órdenes**.
+4. El botón **"Pagar con tarjeta"** aparece en el carrito; las órdenes llegan a **Órdenes**.
 
 Los datos de tarjeta se procesan en la página segura de Stripe (checkout hosteado): **nunca tocan
-tu servidor**. Los montos se calculan en el servidor y el pago se confirma por webhook firmado.
+tu servidor**. Los montos (con cupón y envío) se calculan en el servidor y el pago se confirma por
+webhook firmado.
 
 ## Pagos con PayPal
 
@@ -213,11 +277,14 @@ tu servidor**. Los montos se calculan en el servidor y el pago se confirma por w
 
 Protecciones incluidas:
 
+- **Verificación en dos pasos (2FA)** con app de autenticación (Google Authenticator, Authy…):
+  opcional para cualquier usuario y **obligatoria para administradores**. Incluye **códigos de
+  recuperación** y desafío en el inicio de sesión. Secretos y códigos **encriptados**.
 - **Headers de seguridad** en todas las respuestas (X-Frame-Options, X-Content-Type-Options,
   Referrer-Policy, Permissions-Policy y HSTS bajo HTTPS).
-- **Anti-spam**: honeypot en los formularios públicos + **rate-limit** (8 envíos/min por IP).
+- **Anti-spam**: honeypot en los formularios públicos + **rate-limit** por IP.
 - **Subidas** limitadas a imágenes y tamaño máximo.
-- **Llaves de IA encriptadas** en la base de datos.
+- **Secretos encriptados** (IA, Stripe, PayPal, SMTP, 2FA) en la base de datos.
 - **Roles**: el cliente (Editor) no accede a módulos, ajustes ni usuarios.
 
 Checklist antes de publicar en producción:
@@ -231,26 +298,40 @@ Checklist antes de publicar en producción:
 
 > ¿Encontraste una vulnerabilidad? **No abras un issue público** — sigue [SECURITY.md](SECURITY.md).
 
+## Pruebas y CI
+
+El proyecto incluye una **suite de pruebas** (PHPUnit) que cubre las rutas críticas: 2FA, cupones,
+carrito (stock, variantes y envío), enrutado multilenguaje, acceso al panel y reservas.
+
+```bash
+php artisan test
+```
+
+Además, **GitHub Actions** (`.github/workflows/ci.yml`) corre la suite en **cada push y Pull
+Request** a `main`, de modo que ningún cambio se integra sin quedar verificado. Puedes exigir el
+check en la protección de rama del repositorio.
+
 ## Contribuir
 
 ¡Las contribuciones son bienvenidas! Este proyecto crece con la comunidad.
 
 1. Haz un **fork** y crea una rama (`git checkout -b mi-mejora`).
-2. Sigue el estilo del código existente (PSR-12) y prueba tus cambios localmente.
-3. Abre un **Pull Request** describiendo qué cambia y por qué.
+2. Sigue el estilo del código existente (PSR-12) y **agrega/actualiza pruebas** para tu cambio.
+3. Asegúrate de que `php artisan test` pase y abre un **Pull Request** describiendo qué cambia y por qué.
 
 Lee la **[guía de contribución](CONTRIBUTING.md)** para los detalles.
 
-> **Nota de seguridad:** la rama `main` está protegida y **cada Pull Request se revisa antes de
-> fusionarse** — ningún cambio entra sin revisión del mantenedor. No se aceptan PRs con secretos,
-> binarios sospechosos ni dependencias sin justificar.
+> **Nota de seguridad:** la rama `main` está protegida y **cada Pull Request se revisa (y pasa la
+> CI) antes de fusionarse** — ningún cambio entra sin revisión del mantenedor. No se aceptan PRs
+> con secretos, binarios sospechosos ni dependencias sin justificar.
 
 ## Créditos
 
 Construido sobre software libre increíble: [Laravel](https://laravel.com),
 [Filament](https://filamentphp.com), [Tailwind CSS](https://tailwindcss.com),
-[Livewire](https://livewire.laravel.com), [Stripe](https://stripe.com) y
-[PayPal](https://developer.paypal.com).
+[Livewire](https://livewire.laravel.com), [Stripe](https://stripe.com),
+[PayPal](https://developer.paypal.com), [pragmarx/google2fa](https://github.com/antonioribeiro/google2fa)
+y [BaconQrCode](https://github.com/Bacon/BaconQrCode).
 
 Creado y mantenido por [@celvintr](https://github.com/celvintr). Si te sirve, deja una ⭐ y
 ayúdanos a mejorarlo.

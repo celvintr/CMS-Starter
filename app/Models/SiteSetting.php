@@ -22,6 +22,7 @@ class SiteSetting extends Model
         'paypal_enabled' => 'boolean',
         'menu' => 'array',
         'features' => 'array',
+        'cookie_banner' => 'boolean',
     ];
 
     /**

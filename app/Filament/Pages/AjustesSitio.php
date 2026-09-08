@@ -154,6 +154,29 @@ class AjustesSitio extends Page implements HasForms
                         Forms\Components\Textarea::make('footer_text')->label('Texto del pie de página')->rows(2),
                     ])->collapsed(),
 
+                Forms\Components\Section::make('Analítica y cookies')
+                    ->description('Scripts de seguimiento y aviso de cookies del sitio.')
+                    ->icon('heroicon-o-chart-pie')
+                    ->schema([
+                        Forms\Components\Textarea::make('analytics_head')
+                            ->label('Código en el <head>')->rows(4)
+                            ->helperText('Pega aquí el snippet de Google Analytics 4, Meta Pixel, TikTok Pixel, etc.'),
+                        Forms\Components\Textarea::make('analytics_body')
+                            ->label('Código antes de </body>')->rows(3)
+                            ->helperText('Para chats en vivo, píxeles noscript u otros scripts que van al final.'),
+                        Forms\Components\Toggle::make('cookie_banner')
+                            ->label('Mostrar banner de cookies')->live()
+                            ->helperText('Si lo activas, los scripts de arriba solo se cargan cuando el visitante acepta.'),
+                        Forms\Components\TextInput::make('cookie_text')
+                            ->label('Texto del banner')
+                            ->placeholder('Usamos cookies para mejorar tu experiencia.')
+                            ->visible(fn (Forms\Get $get) => $get('cookie_banner')),
+                        Forms\Components\TextInput::make('cookie_policy_url')
+                            ->label('Enlace a la política (opcional)')->url()
+                            ->placeholder('https://…')
+                            ->visible(fn (Forms\Get $get) => $get('cookie_banner')),
+                    ])->collapsed(),
+
                 Forms\Components\Section::make('Idiomas y traducciones')
                     ->description('Sitio multilenguaje con URLs por idioma (/en, /es…). El idioma por defecto usa los campos de arriba; los demás se traducen aquí y en cada página o entrada del blog.')
                     ->icon('heroicon-o-language')

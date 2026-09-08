@@ -86,6 +86,22 @@
         @keyframes riseIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
         .rise { animation: riseIn .7s cubic-bezier(.2,.7,.2,1) both; }
     </style>
+
+    {{-- Analítica / seguimiento. Si el banner de cookies está activo, se difiere
+         hasta que el visitante acepte (se guarda en un <template>). --}}
+    @php
+        $trackHead = trim((string) $settings->analytics_head);
+        $trackBody = trim((string) $settings->analytics_body);
+        $cookieBanner = (bool) $settings->cookie_banner;
+        $consentGate = $cookieBanner && ($trackHead !== '' || $trackBody !== '');
+    @endphp
+    @if ($trackHead !== '')
+        @if ($consentGate)
+            <template id="__track_head">{!! $trackHead !!}</template>
+        @else
+            {!! $trackHead !!}
+        @endif
+    @endif
 </head>
 <body class="font-sans bg-[#fafaf9] text-slate-700 antialiased">
 
@@ -215,6 +231,75 @@
            aria-label="WhatsApp">
             <svg viewBox="0 0 24 24" class="h-7 w-7" fill="currentColor"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.599 5.336l-.999 3.648 3.9-1.283zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.767.967-.94 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
         </a>
+    @endif
+
+    {{-- Analítica (final del body) --}}
+    @if ($trackBody !== '')
+        @if ($consentGate)
+            <template id="__track_body">{!! $trackBody !!}</template>
+        @else
+            {!! $trackBody !!}
+        @endif
+    @endif
+
+    {{-- Banner de cookies --}}
+    @if ($cookieBanner)
+        <div id="__cookie" hidden
+             style="position:fixed;bottom:16px;left:16px;right:16px;z-index:60;max-width:640px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 10px 40px -12px rgba(15,23,42,.3);padding:16px 18px;display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+            <p style="margin:0;flex:1;min-width:220px;font-size:13px;color:#475569;line-height:1.5">
+                {{ $settings->cookie_text ?: 'Usamos cookies para mejorar tu experiencia y analizar el tráfico.' }}
+                @if ($settings->cookie_policy_url)
+                    <a href="{{ $settings->cookie_policy_url }}" style="color:var(--brand);text-decoration:underline">Más información</a>
+                @endif
+            </p>
+            <div style="display:flex;gap:8px">
+                <button type="button" data-cookie="rejected" style="padding:8px 16px;border:1px solid #cbd5e1;background:#fff;color:#475569;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer">Rechazar</button>
+                <button type="button" data-cookie="accepted" class="bg-brand" style="padding:8px 16px;border:0;color:#fff;border-radius:999px;font-size:13px;font-weight:700;cursor:pointer">Aceptar</button>
+            </div>
+        </div>
+    @endif
+
+    @if ($cookieBanner || $consentGate)
+        <script>
+            (function () {
+                function activate() {
+                    ['__track_head', '__track_body'].forEach(function (id) {
+                        var t = document.getElementById(id);
+                        if (!t || !t.content) return;
+                        var frag = t.content.cloneNode(true);
+                        frag.querySelectorAll('script').forEach(function (old) {
+                            var s = document.createElement('script');
+                            for (var i = 0; i < old.attributes.length; i++) {
+                                s.setAttribute(old.attributes[i].name, old.attributes[i].value);
+                            }
+                            s.text = old.textContent;
+                            old.parentNode.replaceChild(s, old);
+                        });
+                        (id === '__track_head' ? document.head : document.body).appendChild(frag);
+                        t.remove();
+                    });
+                }
+
+                var gated = {{ $consentGate ? 'true' : 'false' }};
+                var consent = null;
+                try { consent = localStorage.getItem('cookie_consent'); } catch (e) {}
+
+                if (gated && consent === 'accepted') activate();
+
+                var banner = document.getElementById('__cookie');
+                if (banner) {
+                    if (!consent) banner.hidden = false;
+                    banner.querySelectorAll('[data-cookie]').forEach(function (btn) {
+                        btn.addEventListener('click', function () {
+                            var v = btn.getAttribute('data-cookie');
+                            try { localStorage.setItem('cookie_consent', v); } catch (e) {}
+                            banner.hidden = true;
+                            if (v === 'accepted' && gated) activate();
+                        });
+                    });
+                }
+            })();
+        </script>
     @endif
 
 </body>

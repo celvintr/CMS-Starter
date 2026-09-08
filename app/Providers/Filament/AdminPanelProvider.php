@@ -3,8 +3,10 @@
 namespace App\Providers\Filament;
 
 use App\Http\Middleware\RequireTwoFactor;
+use App\Models\SiteSetting;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
+use Illuminate\Support\Facades\Schema;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages;
@@ -23,15 +25,28 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        return $panel
+        // Marca del cliente (nombre, logo, favicon, color) desde los ajustes del sitio.
+        // Lectura defensiva: durante migraciones la tabla puede no existir todavía.
+        $settings = null;
+        try {
+            $settings = Schema::hasTable('site_settings') ? SiteSetting::query()->first() : null;
+        } catch (\Throwable $e) {
+            $settings = null;
+        }
+
+        $brandColor = $settings?->primary_color;
+        $logoUrl = $settings?->logo_path ? asset('storage/' . $settings->logo_path) : null;
+        $faviconUrl = $settings?->favicon_path ? asset('storage/' . $settings->favicon_path) : null;
+
+        $panel
             ->default()
             ->id('admin')
             ->path('admin')
             ->login()
             ->profile(isSimple: false)
-            ->brandName('CMS Starter')
+            ->brandName($settings?->site_name ?: 'CMS Starter')
             ->colors([
-                'primary' => Color::Blue,
+                'primary' => $brandColor ? Color::hex($brandColor) : Color::Blue,
             ])
             ->sidebarCollapsibleOnDesktop()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
@@ -58,5 +73,15 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
                 RequireTwoFactor::class,
             ]);
+
+        if ($logoUrl) {
+            $panel->brandLogo($logoUrl)->brandLogoHeight('2rem');
+        }
+
+        if ($faviconUrl) {
+            $panel->favicon($faviconUrl);
+        }
+
+        return $panel;
     }
 }

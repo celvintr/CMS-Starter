@@ -25,12 +25,14 @@ class PaymentController extends Controller
             'nombre' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:150'],
             'telefono' => ['nullable', 'string', 'max:40'],
+            'direccion' => ['nullable', 'string', 'max:255'],
         ]);
 
         // Los montos se calculan en el servidor desde el carrito (nunca del cliente).
         $summary = (new CartController())->summary();
         $items = $summary['items'];
         $discount = $summary['discount'];
+        $shipping = $summary['shipping'];
         $total = $summary['total'];
 
         if (empty($items) || $total <= 0) {
@@ -50,6 +52,8 @@ class PaymentController extends Controller
             'currency' => $currency,
             'coupon_code' => $summary['coupon']?->code,
             'discount' => $discount,
+            'shipping' => $shipping,
+            'shipping_address' => $request->input('direccion'),
             'status' => 'pending',
         ]);
 
@@ -61,6 +65,18 @@ class PaymentController extends Controller
             ],
             'quantity' => (int) $it['qty'],
         ], $items);
+
+        // Envío como línea aparte.
+        if ($shipping > 0) {
+            $lineItems[] = [
+                'price_data' => [
+                    'currency' => $currency,
+                    'product_data' => ['name' => 'Envío'],
+                    'unit_amount' => (int) round($shipping * 100),
+                ],
+                'quantity' => 1,
+            ];
+        }
 
         try {
             $stripe = new StripeClient($settings->stripe_secret_key);

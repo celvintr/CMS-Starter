@@ -24,6 +24,7 @@ class PayPalController extends Controller
             'nombre' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:150'],
             'telefono' => ['nullable', 'string', 'max:40'],
+            'direccion' => ['nullable', 'string', 'max:255'],
         ]);
 
         // Montos calculados en el servidor desde el carrito.
@@ -48,6 +49,8 @@ class PayPalController extends Controller
             'currency' => $currency,
             'coupon_code' => $summary['coupon']?->code,
             'discount' => $summary['discount'],
+            'shipping' => $summary['shipping'],
+            'shipping_address' => $request->input('direccion'),
             'status' => 'pending',
         ]);
 

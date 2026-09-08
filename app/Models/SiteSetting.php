@@ -23,7 +23,27 @@ class SiteSetting extends Model
         'menu' => 'array',
         'features' => 'array',
         'cookie_banner' => 'boolean',
+        'shipping_enabled' => 'boolean',
+        'shipping_cost' => 'decimal:2',
+        'shipping_free_from' => 'decimal:2',
     ];
+
+    /**
+     * Costo de envío para un subtotal dado. 0 si el envío está apagado o si el
+     * subtotal alcanza el umbral de envío gratis.
+     */
+    public function shippingFor(float $subtotal): float
+    {
+        if (! $this->shipping_enabled) {
+            return 0.0;
+        }
+
+        if ($this->shipping_free_from !== null && $subtotal >= (float) $this->shipping_free_from) {
+            return 0.0;
+        }
+
+        return round((float) $this->shipping_cost, 2);
+    }
 
     /**
      * Enlaces del menú de navegación. Usa el menú personalizado si existe;

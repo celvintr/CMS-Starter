@@ -180,7 +180,7 @@ class CartController extends Controller
             return back();
         }
 
-        $url = $this->buildWhatsappUrl($summary, $request->input('nombre'), $request->input('nota'));
+        $url = $this->buildWhatsappUrl($summary, $request->input('nombre'), $request->input('nota'), $request->input('direccion'));
 
         return redirect()->away($url);
     }
@@ -218,9 +218,10 @@ class CartController extends Controller
             }
         }
 
-        $total = round(max(0, $subtotal - $discount), 2);
+        $shipping = SiteSetting::current()->shippingFor($subtotal);
+        $total = round(max(0, $subtotal - $discount) + $shipping, 2);
 
-        return compact('items', 'subtotal', 'discount', 'total', 'coupon', 'couponError');
+        return compact('items', 'subtotal', 'discount', 'shipping', 'total', 'coupon', 'couponError');
     }
 
     /**
@@ -280,7 +281,7 @@ class CartController extends Controller
     /**
      * Arma el enlace de WhatsApp con el detalle del pedido (incluye descuento).
      */
-    public function buildWhatsappUrl(array $summary, ?string $nombre = null, ?string $nota = null): string
+    public function buildWhatsappUrl(array $summary, ?string $nombre = null, ?string $nota = null, ?string $direccion = null): string
     {
         $settings = SiteSetting::current();
         $number = preg_replace('/\D+/', '', $settings->whatsapp ?? '');
@@ -295,12 +296,21 @@ class CartController extends Controller
             $lines[] = "• {$it['qty']} x {$name} = " . number_format($it['subtotal'], 2);
         }
         $lines[] = '';
-        if (($summary['discount'] ?? 0) > 0) {
+        if (($summary['discount'] ?? 0) > 0 || ($summary['shipping'] ?? 0) > 0) {
             $lines[] = 'Subtotal: ' . number_format($summary['subtotal'], 2);
+        }
+        if (($summary['discount'] ?? 0) > 0) {
             $code = $summary['coupon'] ? $summary['coupon']->code : 'cupón';
             $lines[] = "Descuento ({$code}): -" . number_format($summary['discount'], 2);
         }
+        if (($summary['shipping'] ?? 0) > 0) {
+            $lines[] = 'Envío: ' . number_format($summary['shipping'], 2);
+        }
         $lines[] = '*Total: ' . number_format($summary['total'], 2) . '*';
+        if ($direccion) {
+            $lines[] = '';
+            $lines[] = 'Dirección: ' . $direccion;
+        }
         if ($nota) {
             $lines[] = '';
             $lines[] = 'Nota: ' . $nota;

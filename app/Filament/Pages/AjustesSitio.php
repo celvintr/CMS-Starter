@@ -265,6 +265,21 @@ class AjustesSitio extends Page implements HasForms
                             ->helperText('Déjalo vacío para no cambiar el existente.'),
                     ])->columns(2)->collapsed(),
 
+                Forms\Components\Section::make('Envíos')
+                    ->description('Costo de envío para las órdenes de la tienda.')
+                    ->icon('heroicon-o-truck')
+                    ->visible(fn () => \App\Support\Features::enabled('tienda'))
+                    ->schema([
+                        Forms\Components\Toggle::make('shipping_enabled')->label('Cobrar envío')->live(),
+                        Forms\Components\TextInput::make('shipping_cost')->label('Costo de envío')
+                            ->numeric()->minValue(0)
+                            ->visible(fn (Forms\Get $get) => $get('shipping_enabled')),
+                        Forms\Components\TextInput::make('shipping_free_from')->label('Envío gratis desde (subtotal)')
+                            ->numeric()->minValue(0)
+                            ->helperText('Opcional. Si el subtotal alcanza este monto, el envío es gratis.')
+                            ->visible(fn (Forms\Get $get) => $get('shipping_enabled')),
+                    ])->columns(2)->collapsed(),
+
                 Forms\Components\Section::make('Notificaciones por correo')
                     ->description('Elige por cuál cuenta y a quién avisar cuando llega un mensaje o una orden.')
                     ->icon('heroicon-o-bell-alert')

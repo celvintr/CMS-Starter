@@ -8,7 +8,7 @@ class Order extends Model
 {
     protected $fillable = [
         'reference', 'provider', 'customer_name', 'customer_email', 'customer_phone',
-        'items', 'total', 'currency', 'status',
+        'items', 'total', 'currency', 'status', 'coupon_code', 'discount', 'shipping', 'shipping_address',
         'stripe_session_id', 'stripe_payment_intent',
         'paypal_order_id', 'paypal_capture_id', 'paid_at',
     ];
@@ -16,8 +16,26 @@ class Order extends Model
     protected $casts = [
         'items' => 'array',
         'total' => 'decimal:2',
+        'discount' => 'decimal:2',
+        'shipping' => 'decimal:2',
         'paid_at' => 'datetime',
     ];
+
+    public static function statuses(): array
+    {
+        return [
+            'pending' => 'Pendiente',
+            'paid' => 'Pagada',
+            'shipped' => 'Enviada',
+            'delivered' => 'Entregada',
+            'canceled' => 'Cancelada',
+        ];
+    }
+
+    public function statusLabel(): string
+    {
+        return static::statuses()[$this->status] ?? $this->status;
+    }
 
     public function isPaid(): bool
     {

@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\CartController;
 use App\Models\Entry;
 use App\Models\Module;
 use App\Models\Order;
+use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -57,6 +59,28 @@ class CartTest extends TestCase
         // Variante agotada: no se agrega.
         $this->post(route('cart.add', $entry->id), ['variant' => 1, 'qty' => 1]);
         $this->assertArrayNotHasKey($entry->id . ':1', (array) session('cart'));
+    }
+
+    public function test_shipping_added_to_total_with_free_threshold(): void
+    {
+        $settings = SiteSetting::current();
+
+        // Envío apagado: 0.
+        $this->assertSame(0.0, $settings->shippingFor(100));
+
+        // Envío plano de 50, gratis desde 500.
+        $settings->update(['shipping_enabled' => true, 'shipping_cost' => 50, 'shipping_free_from' => 500]);
+        $settings->refresh();
+        $this->assertSame(50.0, $settings->shippingFor(100));  // no alcanza el umbral
+        $this->assertSame(0.0, $settings->shippingFor(500));   // envío gratis
+
+        // El resumen del carrito suma el envío al total.
+        $entry = $this->shopEntry(['data' => ['precio' => 100]]);
+        session(['cart' => [$entry->id => 2]]); // subtotal 200
+        $summary = (new CartController())->summary();
+        $this->assertSame(200.0, $summary['subtotal']);
+        $this->assertSame(50.0, $summary['shipping']);
+        $this->assertSame(250.0, $summary['total']);
     }
 
     public function test_reduce_stock_from_paid_order(): void

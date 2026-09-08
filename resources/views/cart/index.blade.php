@@ -92,6 +92,12 @@
                         <span>−{{ number_format($discount, 2) }}</span>
                     </div>
                 @endif
+                @if ($settings->shipping_enabled)
+                    <div class="flex justify-between text-slate-500">
+                        <span>Envío</span>
+                        <span>{{ $shipping > 0 ? number_format($shipping, 2) : 'Gratis' }}</span>
+                    </div>
+                @endif
                 <div class="flex justify-between items-center pt-2 border-t border-slate-100 text-2xl font-extrabold" style="color: var(--brand-ink)">
                     <span>Total</span>
                     <span>{{ number_format($total, 2) }}</span>
@@ -114,6 +120,10 @@
                         </div>
                         <input type="text" name="telefono" placeholder="Teléfono (opcional)" value="{{ old('telefono') }}"
                                class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:ring-2 focus:ring-brand/40 focus:border-brand outline-none">
+                        @if ($settings->shipping_enabled)
+                            <input type="text" name="direccion" placeholder="Dirección de envío" value="{{ old('direccion') }}"
+                                   class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:ring-2 focus:ring-brand/40 focus:border-brand outline-none">
+                        @endif
 
                         <div class="grid gap-3 @if ($settings->stripeReady() && $settings->paypalReady()) md:grid-cols-2 @endif">
                             @if ($settings->stripeReady())
@@ -144,6 +154,10 @@
                         <input type="text" name="nota" placeholder="Nota (opcional)"
                                class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand focus:border-brand outline-none">
                     </div>
+                    @if ($settings->shipping_enabled)
+                        <input type="text" name="direccion" placeholder="Dirección de envío"
+                               class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand focus:border-brand outline-none">
+                    @endif
                     <button type="submit"
                             class="w-full py-3 rounded-lg bg-green-500 text-white font-semibold hover:bg-green-600 transition flex items-center justify-center gap-2">
                         <svg viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.599 5.336l-.999 3.648 3.9-1.283z"/></svg>

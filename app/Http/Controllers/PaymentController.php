@@ -56,7 +56,7 @@ class PaymentController extends Controller
         $lineItems = array_map(fn ($it) => [
             'price_data' => [
                 'currency' => $currency,
-                'product_data' => ['name' => $it['title']],
+                'product_data' => ['name' => $it['title'] . (! empty($it['variant']) ? ' - ' . $it['variant'] : '')],
                 'unit_amount' => (int) round(((float) $it['price']) * 100),
             ],
             'quantity' => (int) $it['qty'],

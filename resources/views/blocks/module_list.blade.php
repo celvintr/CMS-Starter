@@ -34,7 +34,9 @@
                         @endif
                         <div class="p-6">
                             <h3 class="font-display text-lg font-bold tracking-tight text-brandink group-hover:text-brand transition-colors">{{ $entry->title }}</h3>
-                            @if ($priceField && ($price = data_get($entry->data, $priceField['key'])) !== null)
+                            @if ($entry->hasVariants())
+                                <div class="mt-1.5 font-display text-2xl font-extrabold text-brand">desde {{ number_format($entry->variantPriceRange()[0], 2) }}</div>
+                            @elseif ($priceField && ($price = data_get($entry->data, $priceField['key'])) !== null)
                                 <div class="mt-1.5 font-display text-2xl font-extrabold text-brand">{{ number_format((float) $price, 2) }}</div>
                             @endif
                             @if ($textField && ($txt = data_get($entry->data, $textField['key'])))

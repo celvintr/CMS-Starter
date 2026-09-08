@@ -26,17 +26,31 @@
                             @endif
                             <div class="flex-1">
                                 <div class="font-semibold" style="color: var(--brand-ink)">{{ $it['title'] }}</div>
+                                @if (! empty($it['variant']))
+                                    <div class="text-xs text-slate-400">{{ $it['variant'] }}</div>
+                                @endif
                                 <div class="text-sm text-slate-500">{{ number_format($it['price'], 2) }} c/u</div>
                             </div>
-                            <input type="number" name="qty[{{ $it['id'] }}]" value="{{ $it['qty'] }}" min="1"
+                            <input type="number" name="qty[{{ $it['key'] }}]" value="{{ $it['qty'] }}" min="1"
                                    class="w-20 rounded-lg border border-slate-300 px-2 py-1 text-center">
                             <div class="w-24 text-right font-bold" style="color: var(--brand-ink)">{{ number_format($it['subtotal'], 2) }}</div>
+                            <button type="submit" form="remove-{{ $loop->index }}" class="text-slate-300 hover:text-red-600" aria-label="Quitar" title="Quitar">
+                                <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                            </button>
                         </div>
                     @endforeach
                 </div>
 
                 <button type="submit" class="mt-4 text-sm text-slate-500 hover:text-brand">Actualizar cantidades</button>
             </form>
+
+            {{-- Formularios de "quitar" (fuera del form de actualizar para no anidar) --}}
+            @foreach ($items as $it)
+                <form id="remove-{{ $loop->index }}" method="POST" action="{{ route('cart.remove') }}" class="hidden">
+                    @csrf
+                    <input type="hidden" name="key" value="{{ $it['key'] }}">
+                </form>
+            @endforeach
 
             {{-- Cupón de descuento --}}
             <div class="mt-4 bg-white rounded-2xl border border-slate-100 shadow-sm p-5">

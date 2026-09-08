@@ -39,8 +39,22 @@ class Order extends Model
             }
 
             $entry = Entry::find($id);
+            if (! $entry) {
+                continue;
+            }
 
-            if ($entry && $entry->tracksStock()) {
+            $variantIndex = $item['variant_index'] ?? null;
+
+            if ($variantIndex !== null) {
+                // Descuenta el stock de la variante comprada (si la controla).
+                $variants = $entry->variants ?? [];
+                $stock = $variants[$variantIndex]['stock'] ?? null;
+
+                if (isset($variants[$variantIndex]) && $stock !== null && $stock !== '') {
+                    $variants[$variantIndex]['stock'] = max(0, (int) $stock - $qty);
+                    $entry->update(['variants' => $variants]);
+                }
+            } elseif ($entry->tracksStock()) {
                 $entry->update(['stock' => max(0, (int) $entry->stock - $qty)]);
             }
         }

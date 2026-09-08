@@ -71,6 +71,30 @@ class EntryResource extends Resource
             }
         }
 
+        // Variantes: solo para módulos de tipo tienda (con la función activa).
+        $variantsSection = [];
+        if ($module && $module->type === 'tienda' && Features::enabled('tienda')) {
+            $variantsSection[] = Forms\Components\Section::make('Variantes')
+                ->description('Opciones con su propio precio y stock (talla, color, plan…). Si agregas variantes, el precio y el stock salen de cada una, no del campo/stock general.')
+                ->icon('heroicon-o-squares-2x2')
+                ->collapsed()
+                ->schema([
+                    Forms\Components\Repeater::make('variants')
+                        ->label('')
+                        ->schema([
+                            Forms\Components\TextInput::make('label')->label('Opción')->required()->placeholder('Talla M'),
+                            Forms\Components\TextInput::make('price')->label('Precio')->numeric()->required()->minValue(0),
+                            Forms\Components\TextInput::make('stock')->label('Stock')->numeric()->minValue(0)
+                                ->helperText('Vacío = ilimitado'),
+                        ])
+                        ->columns(3)
+                        ->reorderable()
+                        ->addActionLabel('Agregar variante')
+                        ->defaultItems(0)
+                        ->itemLabel(fn (array $state): ?string => $state['label'] ?? 'Variante'),
+                ]);
+        }
+
         return $form->schema([
             Forms\Components\Grid::make(3)->schema([
                 Forms\Components\Group::make(array_merge([
@@ -83,7 +107,7 @@ class EntryResource extends Resource
                                 $set('slug', Str::slug($state));
                             }
                         }),
-                ], $fieldComponents))->columnSpan(2),
+                ], $fieldComponents, $variantsSection))->columnSpan(2),
 
                 Forms\Components\Group::make(array_merge([
                     Forms\Components\Section::make('Publicación')->schema([

@@ -15,12 +15,34 @@ class CartController extends Controller
         $entry = Entry::findOrFail($entryId);
         $qty = max(1, (int) $request->input('qty', 1));
 
+        // Si el producto tiene variantes, hay que elegir una válida.
+        $variantIndex = null;
+        if ($entry->hasVariants()) {
+            $variantIndex = $request->filled('variant') ? (int) $request->input('variant') : -1;
+            if ($entry->variant($variantIndex) === null) {
+                return back()->with('sent', 'Elige una opción del producto.');
+            }
+        }
+
+        $key = static::cartKey($entry->id, $variantIndex);
         $cart = session('cart', []);
-        $current = (int) ($cart[$entry->id] ?? 0);
+        $current = (int) ($cart[$key] ?? 0);
         $desired = $current + $qty;
 
-        // Respeta el stock cuando el producto lo controla.
-        if ($entry->tracksStock()) {
+        // Respeta el stock (de la variante si aplica, si no del producto).
+        if ($variantIndex !== null) {
+            if ($entry->variantTracksStock($variantIndex)) {
+                if ((int) $entry->variantStock($variantIndex) <= 0) {
+                    return back()->with('sent', 'Esta opción está agotada.');
+                }
+
+                $desired = min($desired, (int) $entry->variantStock($variantIndex));
+
+                if ($desired <= $current) {
+                    return back()->with('sent', 'No hay más unidades de esa opción.');
+                }
+            }
+        } elseif ($entry->tracksStock()) {
             if ((int) $entry->stock <= 0) {
                 return back()->with('sent', 'Este producto está agotado.');
             }
@@ -32,10 +54,36 @@ class CartController extends Controller
             }
         }
 
-        $cart[$entry->id] = $desired;
+        $cart[$key] = $desired;
         session(['cart' => $cart]);
 
         return back()->with('sent', 'Producto agregado al carrito.');
+    }
+
+    /**
+     * Clave de línea del carrito: "id" para producto simple, "id:variante" con opción.
+     */
+    public static function cartKey(int $entryId, ?int $variantIndex): string
+    {
+        return $variantIndex === null ? (string) $entryId : $entryId . ':' . $variantIndex;
+    }
+
+    /**
+     * Descompone una clave del carrito en [id, índice de variante|null].
+     *
+     * @return array{0:int,1:?int}
+     */
+    public static function parseKey(int|string $key): array
+    {
+        $key = (string) $key;
+
+        if (str_contains($key, ':')) {
+            [$id, $variant] = explode(':', $key, 2);
+
+            return [(int) $id, is_numeric($variant) ? (int) $variant : null];
+        }
+
+        return [(int) $key, null];
     }
 
     public function index()
@@ -86,19 +134,28 @@ class CartController extends Controller
     public function update(Request $request)
     {
         $requested = collect((array) $request->input('qty', []))
-            ->mapWithKeys(fn ($qty, $id) => [(int) $id => (int) $qty])
+            ->mapWithKeys(fn ($qty, $key) => [(string) $key => (int) $qty])
             ->filter(fn ($qty) => $qty > 0);
 
-        // Capamos cada cantidad al stock disponible del producto.
-        $entries = Entry::whereIn('id', $requested->keys())->get()->keyBy('id');
+        $ids = $requested->keys()->map(fn ($key) => static::parseKey($key)[0])->unique()->all();
+        $entries = Entry::whereIn('id', $ids)->get()->keyBy('id');
 
+        // Capamos cada cantidad al stock disponible (de la variante o del producto).
         $cart = [];
-        foreach ($requested as $id => $qty) {
+        foreach ($requested as $key => $qty) {
+            [$id, $variantIndex] = static::parseKey($key);
             $entry = $entries->get($id);
-            $qty = $entry ? max($entry->clampQuantity($qty), 0) : $qty;
+
+            if ($entry) {
+                if ($variantIndex !== null && $entry->variantTracksStock($variantIndex)) {
+                    $qty = min($qty, max(0, (int) $entry->variantStock($variantIndex)));
+                } elseif ($variantIndex === null && $entry->tracksStock()) {
+                    $qty = min($qty, max(0, (int) $entry->stock));
+                }
+            }
 
             if ($qty > 0) {
-                $cart[$id] = $qty;
+                $cart[$key] = $qty;
             }
         }
         session(['cart' => $cart]);
@@ -106,10 +163,10 @@ class CartController extends Controller
         return back();
     }
 
-    public function remove(int $entryId)
+    public function remove(Request $request)
     {
         $cart = session('cart', []);
-        unset($cart[$entryId]);
+        unset($cart[(string) $request->input('key')]);
         session(['cart' => $cart]);
 
         return back();
@@ -167,7 +224,8 @@ class CartController extends Controller
     }
 
     /**
-     * Convierte el carrito (id => cantidad) en líneas con precio y total.
+     * Convierte el carrito (clave => cantidad) en líneas con precio y total.
+     * La clave puede traer variante ("id:variante").
      */
     public function itemsFrom(array $cart): array
     {
@@ -175,24 +233,38 @@ class CartController extends Controller
         $total = 0.0;
 
         if (! empty($cart)) {
-            $entries = Entry::with('module')->whereIn('id', array_keys($cart))->get()->keyBy('id');
+            $ids = collect(array_keys($cart))->map(fn ($key) => static::parseKey($key)[0])->unique()->all();
+            $entries = Entry::with('module')->whereIn('id', $ids)->get()->keyBy('id');
 
-            foreach ($cart as $id => $qty) {
+            foreach ($cart as $key => $qty) {
+                [$id, $variantIndex] = static::parseKey($key);
                 $entry = $entries->get($id);
                 if (! $entry) {
                     continue;
                 }
 
-                $priceField = optional($entry->module)->fieldList()->firstWhere('type', 'number');
                 $imgField = optional($entry->module)->fieldList()->firstWhere('type', 'image');
 
-                $price = $priceField ? (float) data_get($entry->data, $priceField['key'], 0) : 0.0;
+                // Precio: de la variante si la línea la trae; si no, del campo número del módulo.
+                if ($variantIndex !== null && ($variant = $entry->variant($variantIndex))) {
+                    $price = $variant['price'];
+                    $variantLabel = $variant['label'];
+                } else {
+                    $variantIndex = null;
+                    $variantLabel = null;
+                    $priceField = optional($entry->module)->fieldList()->firstWhere('type', 'number');
+                    $price = $priceField ? (float) data_get($entry->data, $priceField['key'], 0) : 0.0;
+                }
+
                 $subtotal = $price * $qty;
                 $total += $subtotal;
 
                 $items[] = [
+                    'key' => (string) $key,
                     'id' => $id,
                     'module_id' => $entry->module_id,
+                    'variant' => $variantLabel,
+                    'variant_index' => $variantIndex,
                     'title' => $entry->title,
                     'qty' => $qty,
                     'price' => $price,
@@ -219,7 +291,8 @@ class CartController extends Controller
             $lines[] = '';
         }
         foreach ($summary['items'] as $it) {
-            $lines[] = "• {$it['qty']} x {$it['title']} = " . number_format($it['subtotal'], 2);
+            $name = $it['title'] . (! empty($it['variant']) ? ' (' . $it['variant'] . ')' : '');
+            $lines[] = "• {$it['qty']} x {$name} = " . number_format($it['subtotal'], 2);
         }
         $lines[] = '';
         if (($summary['discount'] ?? 0) > 0) {

@@ -101,10 +101,11 @@ class OrderResource extends Resource
             Infolists\Components\Section::make('Productos')->schema([
                 Infolists\Components\RepeatableEntry::make('items')->label('')->schema([
                     Infolists\Components\TextEntry::make('title')->label('Producto'),
+                    Infolists\Components\TextEntry::make('variant')->label('Opción')->placeholder('—'),
                     Infolists\Components\TextEntry::make('qty')->label('Cantidad'),
                     Infolists\Components\TextEntry::make('subtotal')->label('Subtotal')
                         ->formatStateUsing(fn ($state) => number_format((float) $state, 2)),
-                ])->columns(3),
+                ])->columns(4),
             ]),
         ]);
     }

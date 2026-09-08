@@ -119,11 +119,8 @@ class CampaignResource extends Resource
         $sent = 0;
         foreach ($subscribers as $subscriber) {
             $unsubscribe = URL::signedRoute('newsletter.unsubscribe', ['subscriber' => $subscriber->id]);
-            $html = ($record->body ?: '')
-                . '<hr style="margin-top:32px;border:none;border-top:1px solid #e2e8f0">'
-                . '<p style="color:#94a3b8;font-size:12px;margin-top:12px">'
-                . '¿No quieres recibir más correos? <a href="' . e($unsubscribe) . '" style="color:#94a3b8">Darte de baja</a>.'
-                . '</p>';
+            $footer = '¿No quieres recibir más correos? <a href="' . e($unsubscribe) . '" style="color:#94a3b8">Darte de baja</a>.';
+            $html = \App\Support\EmailTemplate::render($record->subject, $record->body ?: '', $footer);
 
             try {
                 Mailer::send($account, $subscriber->email, $record->subject, $html);

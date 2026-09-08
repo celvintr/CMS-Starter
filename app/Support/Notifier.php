@@ -56,7 +56,7 @@ class Notifier
                 return;
             }
 
-            Mailer::send($account, $to, $subject, $html);
+            Mailer::send($account, $to, $subject, EmailTemplate::render($subject, $html));
         } catch (\Throwable $e) {
             // Un fallo de correo no debe romper el guardado del mensaje/orden.
         }

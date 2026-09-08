@@ -81,6 +81,10 @@ class AjustesSitio extends Page implements HasForms
                         Forms\Components\TextInput::make('tagline')->label('Eslogan / Frase'),
                         Forms\Components\FileUpload::make('logo_path')->label('Logo')
                             ->image()->maxSize(3072)->disk('public')->directory('sitio'),
+                        Forms\Components\FileUpload::make('favicon_path')->label('Favicon')
+                            ->acceptedFileTypes(['image/png', 'image/svg+xml', 'image/x-icon', 'image/vnd.microsoft.icon'])
+                            ->maxSize(512)->disk('public')->directory('sitio')
+                            ->helperText('Ícono de la pestaña del navegador. Cuadrado, ideal 32×32 o 64×64 (PNG, SVG o ICO).'),
                     ])->columns(2),
 
                 Forms\Components\Section::make('Colores')

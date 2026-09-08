@@ -43,6 +43,14 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
+     * ¿Tiene la verificación en dos pasos activada y confirmada?
+     */
+    public function hasTwoFactorEnabled(): bool
+    {
+        return ! is_null($this->two_factor_secret) && ! is_null($this->two_factor_confirmed_at);
+    }
+
+    /**
      * The attributes that should be hidden for serialization.
      *
      * @var list<string>
@@ -62,6 +70,9 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'two_factor_secret' => 'encrypted',
+            'two_factor_recovery_codes' => 'encrypted:array',
+            'two_factor_confirmed_at' => 'datetime',
         ];
     }
 }

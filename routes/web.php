@@ -12,6 +12,7 @@ use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\SubmissionController;
+use App\Http\Controllers\TwoFactorChallengeController;
 use Illuminate\Support\Facades\Route;
 
 // SEO
@@ -20,6 +21,12 @@ Route::get('/robots.txt', [SeoController::class, 'robots']);
 
 // Búsqueda
 Route::get('/buscar', [SearchController::class, 'index'])->name('search');
+
+// Desafío de verificación en dos pasos (2FA) — usuario ya autenticado.
+Route::middleware('auth')->group(function () {
+    Route::get('/verificacion-2fa', [TwoFactorChallengeController::class, 'show'])->name('two-factor.challenge');
+    Route::post('/verificacion-2fa', [TwoFactorChallengeController::class, 'verify'])->middleware('throttle:10,1')->name('two-factor.verify');
+});
 
 // Módulos dinámicos públicos (listado y detalle).
 Route::get('/m/{module}', [ModuleController::class, 'index'])->name('module.index');

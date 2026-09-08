@@ -26,7 +26,85 @@ class SiteSetting extends Model
         'shipping_enabled' => 'boolean',
         'shipping_cost' => 'decimal:2',
         'shipping_free_from' => 'decimal:2',
+        'reservation_days' => 'array',
     ];
+
+    // --- Reservas: horarios y disponibilidad -------------------------------
+
+    /** Días abiertos en formato ISO (1=lunes … 7=domingo). Por defecto L-V. */
+    public function reservationDays(): array
+    {
+        $days = $this->reservation_days ?: [];
+
+        return ! empty($days) ? array_map('intval', $days) : [1, 2, 3, 4, 5];
+    }
+
+    /**
+     * Horarios posibles ("HH:MM") de una fecha según día abierto, apertura,
+     * cierre y duración del turno. No consulta la base (lógica pura).
+     *
+     * @return array<int, string>
+     */
+    public function reservationSlots(\Illuminate\Support\Carbon $date): array
+    {
+        if (! in_array($date->dayOfWeekIso, $this->reservationDays(), true)) {
+            return [];
+        }
+
+        $step = max(5, (int) ($this->reservation_slot_minutes ?: 30));
+        $open = \Illuminate\Support\Carbon::parse($date->toDateString() . ' ' . ($this->reservation_open ?: '09:00'));
+        $close = \Illuminate\Support\Carbon::parse($date->toDateString() . ' ' . ($this->reservation_close ?: '17:00'));
+
+        $slots = [];
+        for ($t = $open->copy(); $t->lt($close); $t->addMinutes($step)) {
+            $slots[] = $t->format('H:i');
+        }
+
+        return $slots;
+    }
+
+    /**
+     * Horarios realmente disponibles de una fecha: quita los que ya alcanzaron
+     * la capacidad y, si la fecha es hoy, los que ya pasaron.
+     *
+     * @return array<int, string>
+     */
+    public function availableReservationSlots(\Illuminate\Support\Carbon $date): array
+    {
+        $slots = $this->reservationSlots($date);
+
+        if (empty($slots)) {
+            return [];
+        }
+
+        $capacity = max(1, (int) ($this->reservation_capacity ?: 1));
+        $taken = [];
+
+        if (\Illuminate\Support\Facades\Schema::hasTable('reservations')) {
+            $taken = Reservation::query()
+                ->whereDate('starts_at', $date->toDateString())
+                ->where('status', '!=', 'canceled')
+                ->get()
+                ->groupBy(fn ($r) => $r->starts_at->format('H:i'))
+                ->map->count()
+                ->all();
+        }
+
+        $isToday = $date->isToday();
+        $now = now();
+
+        return array_values(array_filter($slots, function ($slot) use ($taken, $capacity, $isToday, $date, $now) {
+            if (($taken[$slot] ?? 0) >= $capacity) {
+                return false;
+            }
+
+            if ($isToday && \Illuminate\Support\Carbon::parse($date->toDateString() . ' ' . $slot)->lte($now)) {
+                return false;
+            }
+
+            return true;
+        }));
+    }
 
     /**
      * Costo de envío para un subtotal dado. 0 si el envío está apagado o si el

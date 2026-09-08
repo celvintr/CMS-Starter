@@ -280,6 +280,27 @@ class AjustesSitio extends Page implements HasForms
                             ->visible(fn (Forms\Get $get) => $get('shipping_enabled')),
                     ])->columns(2)->collapsed(),
 
+                Forms\Components\Section::make('Horarios de reservas')
+                    ->description('Días y horas en que se pueden agendar citas.')
+                    ->icon('heroicon-o-clock')
+                    ->visible(fn () => \App\Support\Features::enabled('reservas'))
+                    ->schema([
+                        Forms\Components\CheckboxList::make('reservation_days')
+                            ->label('Días disponibles')
+                            ->options([1 => 'Lunes', 2 => 'Martes', 3 => 'Miércoles', 4 => 'Jueves', 5 => 'Viernes', 6 => 'Sábado', 7 => 'Domingo'])
+                            ->columns(4)
+                            ->helperText('Vacío = Lunes a Viernes.')
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('reservation_open')->label('Apertura')
+                            ->placeholder('09:00')->rule('regex:/^\d{2}:\d{2}$/'),
+                        Forms\Components\TextInput::make('reservation_close')->label('Cierre')
+                            ->placeholder('17:00')->rule('regex:/^\d{2}:\d{2}$/'),
+                        Forms\Components\TextInput::make('reservation_slot_minutes')->label('Duración del turno (min)')
+                            ->numeric()->default(30)->minValue(5),
+                        Forms\Components\TextInput::make('reservation_capacity')->label('Cupos por horario')
+                            ->numeric()->default(1)->minValue(1),
+                    ])->columns(2)->collapsed(),
+
                 Forms\Components\Section::make('Notificaciones por correo')
                     ->description('Elige por cuál cuenta y a quién avisar cuando llega un mensaje o una orden.')
                     ->icon('heroicon-o-bell-alert')

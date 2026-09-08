@@ -40,9 +40,12 @@
                            class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:ring-2 focus:ring-brand/40 focus:border-brand outline-none">
                 @endif
                 <input type="date" name="date" required value="{{ old('date') }}" min="{{ now()->format('Y-m-d') }}"
+                       data-res-date
                        class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:ring-2 focus:ring-brand/40 focus:border-brand outline-none">
-                <input type="time" name="time" required value="{{ old('time') }}"
-                       class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:ring-2 focus:ring-brand/40 focus:border-brand outline-none">
+                <select name="time" required data-res-time
+                        class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:ring-2 focus:ring-brand/40 focus:border-brand outline-none">
+                    <option value="">Elige una fecha primero…</option>
+                </select>
             </div>
             <textarea name="notes" rows="3" placeholder="¿Algo que debamos saber? (opcional)"
                       class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:ring-2 focus:ring-brand/40 focus:border-brand outline-none">{{ old('notes') }}</textarea>
@@ -52,5 +55,35 @@
             </button>
             <p class="text-xs text-slate-400 text-center">Recibirás confirmación por correo o teléfono.</p>
         </form>
+
+        <script>
+            (function () {
+                var dateEl = document.querySelector('[data-res-date]');
+                var timeEl = document.querySelector('[data-res-time]');
+                if (!dateEl || !timeEl) return;
+
+                function loadSlots() {
+                    var d = dateEl.value;
+                    timeEl.innerHTML = '<option value="">Cargando…</option>';
+                    if (!d) { timeEl.innerHTML = '<option value="">Elige una fecha primero…</option>'; return; }
+
+                    fetch('{{ route('reservation.slots') }}?date=' + encodeURIComponent(d), { headers: { 'Accept': 'application/json' } })
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) {
+                            var slots = (data && data.slots) || [];
+                            if (!slots.length) {
+                                timeEl.innerHTML = '<option value="">Sin horarios disponibles</option>';
+                                return;
+                            }
+                            timeEl.innerHTML = '<option value="">Elige un horario…</option>' +
+                                slots.map(function (s) { return '<option value="' + s + '">' + s + '</option>'; }).join('');
+                        })
+                        .catch(function () { timeEl.innerHTML = '<option value="">No se pudieron cargar los horarios</option>'; });
+                }
+
+                dateEl.addEventListener('change', loadSlots);
+                if (dateEl.value) loadSlots();
+            })();
+        </script>
     </section>
 @endif

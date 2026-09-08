@@ -36,6 +36,7 @@ Route::post('/enviar-mensaje', [ContactController::class, 'store'])->middleware(
 Route::post('/f/{module}', [SubmissionController::class, 'store'])->middleware('throttle:8,1')->name('form.submit');
 Route::post('/newsletter/suscribir', [NewsletterController::class, 'subscribe'])->middleware('throttle:5,1')->name('newsletter.subscribe');
 Route::get('/newsletter/baja/{subscriber}', [NewsletterController::class, 'unsubscribe'])->middleware('signed')->name('newsletter.unsubscribe');
+Route::get('/reservas/horarios', [ReservationController::class, 'slots'])->name('reservation.slots');
 Route::post('/reservas', [ReservationController::class, 'store'])->middleware('throttle:8,1')->name('reservation.store');
 
 // Carrito de compras

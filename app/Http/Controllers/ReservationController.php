@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Reservation;
+use App\Models\SiteSetting;
 use App\Support\Features;
 use App\Support\Notifier;
 use Illuminate\Http\Request;
@@ -10,6 +11,26 @@ use Illuminate\Support\Carbon;
 
 class ReservationController extends Controller
 {
+    /** Horarios disponibles para una fecha (JSON, para el selector del sitio). */
+    public function slots(Request $request)
+    {
+        if (! Features::enabled('reservas')) {
+            return response()->json(['slots' => []]);
+        }
+
+        try {
+            $date = Carbon::parse((string) $request->query('date'))->startOfDay();
+        } catch (\Throwable $e) {
+            return response()->json(['slots' => []]);
+        }
+
+        if ($date->isPast() && ! $date->isToday()) {
+            return response()->json(['slots' => []]);
+        }
+
+        return response()->json(['slots' => SiteSetting::current()->availableReservationSlots($date)]);
+    }
+
     public function store(Request $request)
     {
         if (! Features::enabled('reservas')) {
@@ -30,6 +51,14 @@ class ReservationController extends Controller
             'time' => ['required', 'date_format:H:i'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
+
+        // El horario debe ser uno realmente disponible (validado en el servidor).
+        $available = SiteSetting::current()->availableReservationSlots(Carbon::parse($data['date'])->startOfDay());
+        if (! in_array($data['time'], $available, true)) {
+            return back()
+                ->withErrors(['time' => 'Ese horario ya no está disponible. Elige otro.'])
+                ->withInput();
+        }
 
         $startsAt = Carbon::parse($data['date'] . ' ' . $data['time']);
 
